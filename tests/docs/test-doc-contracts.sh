@@ -39,6 +39,7 @@ current_files=(
   docs/decisions/0026-explicit-onboarding-skills-in-default-core.md
   docs/decisions/0027-end-protocol-v1-and-focus-repository-protocol.md
   docs/decisions/0028-authoritative-invariant-encoding.md
+  docs/decisions/0029-outcome-preserving-adaptive-workflow.md
   docs/research/application-legibility.md
   .github/ISSUE_TEMPLATE/real-world-example.md
 )
@@ -48,6 +49,11 @@ done
 
 require AGENTS.md 'Start with the requested outcome'
 require AGENTS.md 'configurable defaults are not authority'
+require AGENTS.md 'hard constraints distinct from the current'
+require AGENTS.md 'one active mutation owner per overlapping scope'
+require docs/WORKFLOW.md '## Preserve Intent Through Decomposition'
+require docs/WORKFLOW.md 'Never promote a current decision'
+require docs/WORKFLOW.md 'green tests prove only the invariants they actually exercise'
 require docs/WORKFLOW.md '### Bounded Change'
 require docs/WORKFLOW.md '### Durable Planned Change'
 require docs/WORKFLOW.md '### Operate The Application'
@@ -66,6 +72,10 @@ require docs/patterns/encoding-invariants.md '| Optional hook |'
 require docs/patterns/encoding-invariants.md '| CI |'
 require docs/patterns/encoding-invariants.md '| Branch protection |'
 require docs/decisions/0028-authoritative-invariant-encoding.md 'Matching requests may invoke it implicitly'
+require docs/decisions/0029-outcome-preserving-adaptive-workflow.md 'Plans and current implementation are working models, not specifications.'
+require docs/decisions/0029-outcome-preserving-adaptive-workflow.md 'Preference for a cleaner or more general design alone is insufficient.'
+require docs/templates/decision.md '## Revisit When'
+require docs/templates/decision.md '## Propagation'
 require docs/ARCHITECTURE.md 'one Rust binary'
 require README.md '## What We Prove'
 require README.md '## Protocol V1 End Of Life'
@@ -74,7 +84,7 @@ require docs/decisions/0027-end-protocol-v1-and-focus-repository-protocol.md '`h
 require .github/ISSUE_TEMPLATE/real-world-example.md '`docs/WORKFLOW.md`'
 require .github/ISSUE_TEMPLATE/real-world-example.md '`docs/ARCHITECTURE.md`'
 
-for heading in Outcome Context Scope Approach 'Risks And Recovery' Progress Decisions Validation Result; do
+for heading in Outcome 'Authority And Constraints' Context 'Scope And Ownership' 'Current Decisions And Assumptions' Approach 'Risks And Recovery' Progress 'Evidence And Revisions' Validation Result; do
   require docs/templates/exec-plan.md "## $heading"
 done
 
