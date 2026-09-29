@@ -94,10 +94,14 @@ cat >"$plan" <<'EOF'
 Active
 ## Outcome
 Use team-local dates at the task boundary.
+## Authority And Constraints
+Task status contract owns externally visible status semantics.
 ## Context
 Task status contract and executable status surface.
-## Scope
-Status calculation only.
+## Scope And Ownership
+Status calculation only; one active mutation owner.
+## Current Decisions And Assumptions
+Keep status values unchanged; date-boundary approach remains revisable.
 ## Approach
 First contract, then implementation.
 ## Risks And Recovery
@@ -105,8 +109,8 @@ Keep the old calculation recoverable in Git.
 ## Progress
 - [x] Checkpoint 1: product boundary inspected.
 - [ ] Checkpoint 2: focused proof recorded.
-## Decisions
-- Keep task status values unchanged.
+## Evidence And Revisions
+- No invalidated premise yet.
 ## Validation
 - Focused proof: pending.
 ## Result
@@ -138,6 +142,13 @@ grep -Fq 'configurable defaults are not authority' "$root/AGENTS.md"
 after_judgment=$(shasum -a 256 "$fixture/src/task-status.sh" | awk '{print $1}')
 [[ "$before_judgment" == "$after_judgment" ]]
 assert_no_control_plane_state
+
+# Decomposition preserves outcome and keeps working choices revisable without
+# granting cross-scope mutation authority.
+grep -Fq 'Never promote a current decision' "$root/docs/WORKFLOW.md"
+grep -Fq 'discovery does not grant mutation authority' "$root/docs/WORKFLOW.md"
+grep -Fq 'make dependent work re-check the new state before continuing' "$root/docs/WORKFLOW.md"
+grep -Fq 'green tests prove only the invariants they actually exercise' "$root/docs/WORKFLOW.md"
 
 # Invariant work routes through accepted authority and requires bidirectional
 # proof without claiming that checked-in CI implies merge enforcement.
