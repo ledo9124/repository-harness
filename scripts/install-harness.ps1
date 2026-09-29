@@ -322,7 +322,9 @@ function Install-HarnessCore {
         }
         if ($commandStatus -eq 0 -and !$DryRun) {
             if (Test-Path $target) {
-                [System.IO.File]::Replace($targetTemp, $target, $null)
+                # PowerShell binds $null to a .NET string parameter as "", which
+                # File.Replace rejects as an illegal backup path.
+                [System.IO.File]::Replace($targetTemp, $target, [NullString]::Value)
             } else {
                 Move-Item -LiteralPath $targetTemp -Destination $target
             }
