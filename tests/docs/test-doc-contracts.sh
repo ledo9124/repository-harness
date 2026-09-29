@@ -40,6 +40,7 @@ current_files=(
   docs/decisions/0027-end-protocol-v1-and-focus-repository-protocol.md
   docs/decisions/0028-authoritative-invariant-encoding.md
   docs/decisions/0029-plans-are-not-authority.md
+  docs/decisions/0030-end-evidence-capsule-v1.md
   docs/research/application-legibility.md
   .github/ISSUE_TEMPLATE/real-world-example.md
 )
@@ -84,6 +85,7 @@ while IFS= read -r payload; do
 done < <(sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' "$root/scripts/harness-install-files.txt")
 
 compatibility_paths=(
+  .agents/skills/onboard-repository/references/evidence-capsule-v1.md
   crates/harness-cli
   scripts/schema
   scripts/harness-cli-install-files.txt
@@ -124,6 +126,7 @@ required_gates=(
   'tests/workflow/test-repository-workflow.sh'
   'tests/workflow/test-task-authority.sh'
   'tests/release/test-harness-release-workflow-contract.sh'
+  'validate_evidence_capsule.py --self-test'
 )
 for gate in "${required_gates[@]}"; do
   require scripts/validate-premerge.sh "$gate"

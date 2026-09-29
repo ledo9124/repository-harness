@@ -412,12 +412,10 @@ When the sibling audit skill is installed, its read-only validator is:
 python3 .agents/skills/audit-onboarding-proposal/scripts/validate_evidence_capsule.py --transcript <raw-session.jsonl> --expected-transcript-sha256 <sha256> --repository <tested-worktree>
 ```
 
-The validator can run only after the transcript exists. For new runs it
-extracts the last complete machine bundle emitted before task completion and
-verifies its bundle digest, pinned producer and source blobs, and whole-file
-patch application. Legacy transcripts with capsules in the completed assistant
-message remain readable. Do not create a local draft merely to prevalidate the
-final answer.
+The validator can run only after the transcript exists. It extracts the last
+complete machine bundle emitted before task completion and verifies its bundle
+digest, pinned producer and source blobs, and whole-file patch application. Do
+not create a local draft merely to prevalidate the final answer.
 
 ### 6. Report the gate
 

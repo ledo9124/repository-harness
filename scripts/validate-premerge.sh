@@ -4,7 +4,7 @@ set -euo pipefail
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$root"
 
-for command in cargo git jq rg; do
+for command in cargo git jq python3 rg; do
   command -v "$command" >/dev/null 2>&1 || {
     echo "pre-merge validation requires: $command" >&2
     exit 1
@@ -18,6 +18,8 @@ done < <(find scripts tests -type f -name '*.sh' -print | LC_ALL=C sort)
 cargo fmt --all -- --check
 cargo test --workspace --locked
 cargo clippy --workspace --all-targets --locked -- -D warnings
+
+python3 .agents/skills/audit-onboarding-proposal/scripts/validate_evidence_capsule.py --self-test
 
 tests/installer/assert-agent-authority-contract.sh
 tests/installer/assert-install-manifest-links.sh

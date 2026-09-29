@@ -1,12 +1,11 @@
 # Evidence Capsule v2
 
-Use v2 for every new onboarding run. V1 remains readable only for legacy
-transcripts.
+Every onboarding run emits v2. It is the only capsule schema the validator
+accepts.
 
-V2 replaces prose-defined hunk boundary hashes with hashes of the complete
-destination file before and after an in-memory patch application. The
-repository-aware validator also verifies every pinned source range and the
-producer-skill blob.
+Each hunk hashes the complete destination file before and after an in-memory
+patch application. The repository-aware validator also verifies every pinned
+source range and the producer-skill blob.
 
 ## Patch markers
 
@@ -56,8 +55,8 @@ The emitter computes the capsule and patch blocks and wraps them in:
 The raw tool output is the canonical evidence artifact. Do not duplicate the
 bundle in the assistant answer. The transcript-aware validator authenticates
 the last complete bundle emitted before task completion. This avoids
-model-mediated copying of hashes while preserving legacy final-message
-capsules.
+model-mediated copying of hashes; capsules in the final assistant message are
+rejected.
 
 Minimal input shape:
 

@@ -64,13 +64,6 @@ impl CoreDistributionPort for EmbeddedCoreDistribution {
         )?;
         add(
             &mut files,
-            ".agents/skills/onboard-repository/references/evidence-capsule-v1.md",
-            include_bytes!(
-                "../../../../.agents/skills/onboard-repository/references/evidence-capsule-v1.md"
-            ),
-        )?;
-        add(
-            &mut files,
             ".agents/skills/onboard-repository/references/evidence-capsule-v2.md",
             include_bytes!(
                 "../../../../.agents/skills/onboard-repository/references/evidence-capsule-v2.md"

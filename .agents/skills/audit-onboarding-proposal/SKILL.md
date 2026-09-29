@@ -51,10 +51,8 @@ eligibility **Invalid** rather than guessing.
 
 Use patch-admissibility mode when the request is only whether one or more exact
 hunks from a valid `onboarding-evidence-capsule/v2` are safe to present for
-approval. Authenticated v1 transcripts remain eligible as legacy evidence but
-do not receive repository-aware hash verification. Require the authenticated
-transcript, its expected digest, the tested revision, and explicit hunk IDs. Do
-not infer the requested hunk set.
+approval. Require the authenticated transcript, its expected digest, the tested
+revision, and explicit hunk IDs. Do not infer the requested hunk set.
 
 Run the evidence-capsule validator, then inspect only material needed to decide
 the requested hunks. For each requested hunk:
@@ -101,13 +99,10 @@ with `REISSUE_APPLY` or `REISSUE_NO_APPLY`, followed by `AUDIT_COMPLETE`.
 
 ### Evidence-capsule route
 
-When the tested producer skill contains
-`ONBOARDING_EVIDENCE_BUNDLE_V2`, the raw transcript must contain one complete
-machine-emitted bundle before task completion. The producer's final assistant
-message references its digest and hunk IDs rather than duplicating its bytes.
-Legacy producer revisions may instead include the marked JSON capsule and
-marked diff hunks in the completed assistant message. After authenticating the
-raw transcript, run:
+The raw transcript must contain one complete machine-emitted
+`ONBOARDING_EVIDENCE_BUNDLE_V2` before task completion. The producer's final
+assistant message references its digest and hunk IDs rather than duplicating
+its bytes. After authenticating the raw transcript, run:
 
 ```text
 python3 .agents/skills/audit-onboarding-proposal/scripts/validate_evidence_capsule.py --transcript <raw-session.jsonl> --expected-transcript-sha256 <sha256> --repository <tested-worktree>
@@ -116,12 +111,11 @@ python3 .agents/skills/audit-onboarding-proposal/scripts/validate_evidence_capsu
 The validator is read-only. It verifies capsule structure, referential
 integrity, boundary-result hash invariants, pinned producer/source blobs,
 displayed patch hashes, exact patch applicability, and whole-destination
-before/after hashes. For a machine bundle it also reports
-`evidence_source=machine_tool_output` and verifies the exact inner-bundle
-digest. Treat a missing, truncated, or invalid required bundle/capsule as a
-gate-3 failure and return **NO APPLY** for its unverified hunks. V1 capsules
-remain structurally valid legacy evidence but do not receive repository-aware
-source or destination verification; full semantic audit remains required.
+before/after hashes. It reports `evidence_source=machine_tool_output` and
+verifies the exact inner-bundle digest. It rejects any other capsule schema and
+any capsule outside a machine-emitted bundle. Treat a missing, truncated, or
+invalid bundle/capsule as a gate-3 failure and return **NO APPLY** for its
+unverified hunks.
 
 A valid capsule is an authenticated index, not evidence. Independently retrieve
 every cited source from its pinned revision, hash the exact cited line range,

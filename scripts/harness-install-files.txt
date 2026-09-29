@@ -9,7 +9,6 @@
 .agents/skills/improve-harness/agents/openai.yaml
 .agents/skills/onboard-repository/SKILL.md
 .agents/skills/onboard-repository/agents/openai.yaml
-.agents/skills/onboard-repository/references/evidence-capsule-v1.md
 .agents/skills/onboard-repository/references/evidence-capsule-v2.md
 .agents/skills/onboard-repository/scripts/emit_evidence_bundle.py
 .agents/skills/onboard-repository/scripts/render_patch.py
