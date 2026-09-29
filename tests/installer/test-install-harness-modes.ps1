@@ -75,6 +75,13 @@ try {
     }
     if (Test-Path (Join-Path $Fresh ".agents/skills/engineering-wisdom")) { throw "core implicitly installed engineering wisdom" }
 
+    # Rerunning over an installed core updates it and replaces the existing
+    # executable in place.
+    Invoke-Install $Fresh @("Merge")
+    if (Get-ChildItem (Join-Path $Fresh "scripts/bin") -Filter ".harness.*.tmp" -Force) { throw "update left a staged executable behind" }
+    $RerunVersion = ((& (Join-Path $Fresh "scripts/bin/harness.exe") --version) -split "\s+")[-1]
+    if ($RerunVersion -ne $CoreVersion) { throw "update did not replace the existing executable" }
+
     # Engineering wisdom remains explicit-only.
     $Wisdom = Join-Path $Temp "wisdom"
     Invoke-Install $Wisdom @("WithEngineeringWisdom")
