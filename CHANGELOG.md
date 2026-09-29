@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-29 - PR #3
+
+- docs(plans): record removed plan-working-premises experiment (@ledo9124)
+- Merge commit: `17383123aadf6ba65f8d47f566c862cb6861975d`
+- Harness core release: not required
+- Changed files: 1 total
+  - `docs/plans/completed/harness-improvement-plan-working-premises.md`
+
 ## 2026-09-29 - PR #5
 
 - ci: move GitHub actions to their first Node 24 majors (@ledo9124)
