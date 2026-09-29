@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-09-29 - PR #9
+
+- feat(agents): plans are not authority; settled choices are not open (@ledo9124)
+- Merge commit: `5076b8e39e18a36b30ac511e747f8b6f85aa36a9`
+- Harness core candidate: `harness-v0.1.13` (publication requires platform proof)
+- Changed files: 7 total
+  - `AGENTS.md`
+  - `docs/decisions/0029-plans-are-not-authority.md`
+  - `docs/decisions/README.md`
+  - `docs/plans/completed/harness-improvement-plan-authority-v2.md`
+  - `scripts/agent-harness-block.md`
+  - `tests/docs/test-doc-contracts.sh`
+  - `tests/installer/assert-agent-authority-contract.sh`
+
 ## 2026-09-29 - PR #8
 
 - docs(plans): record plans-are-not-authority v2 experiment (@ledo9124)
