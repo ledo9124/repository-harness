@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-09-29 - PR #5
+
+- ci: move GitHub actions to their first Node 24 majors (@ledo9124)
+- Merge commit: `e0648216af759fed84f2ba0486f6390e8d038f76`
+- Harness core candidate: `harness-v0.1.12` (publication requires platform proof)
+- Changed files: 3 total
+  - `.github/workflows/harness-release.yml`
+  - `.github/workflows/post-merge-maintenance.yml`
+  - `.github/workflows/premerge.yml`
+
 ## 2026-09-29 - PR #4
 
 - chore(docs): remove EOL high-risk-story compatibility templates (@ledo9124)
