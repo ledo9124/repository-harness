@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Extract and structurally validate an onboarding evidence capsule.
+"""Extract and validate an onboarding evidence capsule v2 machine bundle.
 
 The validator is intentionally read-only and uses only the Python standard
 library. It authenticates a Codex JSONL transcript when requested, extracts the
-last completed assistant message, and validates the capsule schema. For v2 it
-also verifies pinned Git blobs and applies each marked patch in memory to check
-whole-destination before/after digests.
+last machine-emitted evidence bundle before task completion, validates the v2
+capsule schema, verifies pinned Git blobs, and applies each marked patch in
+memory to check whole-destination before/after digests. Other capsule schemas
+and transports are rejected.
 """
 
 from __future__ import annotations
@@ -20,18 +21,9 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 
-SCHEMA_V1 = "onboarding-evidence-capsule/v1"
-SCHEMA_V2 = "onboarding-evidence-capsule/v2"
-CAPSULE_MARKERS = {
-    SCHEMA_V1: (
-        "<!-- ONBOARDING_EVIDENCE_CAPSULE_V1:BEGIN -->",
-        "<!-- ONBOARDING_EVIDENCE_CAPSULE_V1:END -->",
-    ),
-    SCHEMA_V2: (
-        "<!-- ONBOARDING_EVIDENCE_CAPSULE_V2:BEGIN -->",
-        "<!-- ONBOARDING_EVIDENCE_CAPSULE_V2:END -->",
-    ),
-}
+SCHEMA = "onboarding-evidence-capsule/v2"
+CAPSULE_BEGIN = "<!-- ONBOARDING_EVIDENCE_CAPSULE_V2:BEGIN -->"
+CAPSULE_END = "<!-- ONBOARDING_EVIDENCE_CAPSULE_V2:END -->"
 BUNDLE_BEGIN_RE = re.compile(
     r"<!-- ONBOARDING_EVIDENCE_BUNDLE_V2:BEGIN sha256=([0-9a-f]{64}) -->"
 )
@@ -80,17 +72,10 @@ def require_relative_path(value: Any, context: str) -> None:
 
 
 def extract_capsule(message: str) -> tuple[dict[str, Any], str]:
-    present = [
-        (schema, begin, end)
-        for schema, (begin, end) in CAPSULE_MARKERS.items()
-        if begin in message or end in message
-    ]
-    require(len(present) == 1, "expected exactly one supported evidence-capsule marker pair")
-    marker_schema, begin, end = present[0]
-    require(message.count(begin) == 1, "expected exactly one capsule begin marker")
-    require(message.count(end) == 1, "expected exactly one capsule end marker")
-    before, remainder = message.split(begin, 1)
-    body, after = remainder.split(end, 1)
+    require(message.count(CAPSULE_BEGIN) == 1, "expected exactly one v2 capsule begin marker")
+    require(message.count(CAPSULE_END) == 1, "expected exactly one v2 capsule end marker")
+    before, remainder = message.split(CAPSULE_BEGIN, 1)
+    body, after = remainder.split(CAPSULE_END, 1)
     del before, after
     body = body.strip()
     require(body.startswith("```json\n") and body.endswith("\n```"),
@@ -101,8 +86,7 @@ def extract_capsule(message: str) -> tuple[dict[str, Any], str]:
     except json.JSONDecodeError as exc:
         raise CapsuleError(f"capsule JSON is invalid: {exc}") from exc
     require(isinstance(capsule, dict), "capsule root must be an object")
-    require(capsule.get("schema") == marker_schema,
-            f"capsule marker requires schema {marker_schema}")
+    require(capsule.get("schema") == SCHEMA, f"capsule marker requires schema {SCHEMA}")
     return capsule, sha256_bytes(raw_json.encode("utf-8"))
 
 
@@ -252,53 +236,51 @@ def validate_capsule(
         "capsule",
     )
     schema = capsule["schema"]
-    require(schema in CAPSULE_MARKERS, f"capsule.schema is unsupported: {schema}")
+    require(schema == SCHEMA, f"capsule.schema is unsupported: {schema}")
 
     tested = capsule["tested_repository"]
     require(isinstance(tested, dict), "tested_repository must be an object")
     require_exact_keys(tested, {"root", "revision", "branch"}, "tested_repository")
-    require(isinstance(tested["root"], str) and tested["root"].startswith("/"),
+    require(isinstance(tested["root"], str) and Path(tested["root"]).is_absolute(),
             "tested_repository.root must be absolute")
     require(isinstance(tested["revision"], str) and REVISION_RE.fullmatch(tested["revision"]) is not None,
             "tested_repository.revision must be a lowercase 40-character Git revision")
     require(isinstance(tested["branch"], str) and tested["branch"] != "",
             "tested_repository.branch must be non-empty")
-    if schema == SCHEMA_V2:
-        repository = repository or Path(tested["root"])
-        require(repository.is_dir(), "v2 validation requires an existing tested repository")
-        require(
-            repository.resolve() == Path(tested["root"]).resolve(),
-            "--repository must match tested_repository.root",
-        )
-        root_result = subprocess.run(
-            ["git", "-C", str(repository), "rev-parse", "--show-toplevel"],
-            check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-        require(root_result.returncode == 0, "tested repository is not a Git worktree")
-        require(
-            Path(root_result.stdout.strip()).resolve() == repository.resolve(),
-            "repository path must be the tested Git worktree root",
-        )
+    repository = repository or Path(tested["root"])
+    require(repository.is_dir(), "validation requires an existing tested repository")
+    require(
+        repository.resolve() == Path(tested["root"]).resolve(),
+        "--repository must match tested_repository.root",
+    )
+    root_result = subprocess.run(
+        ["git", "-C", str(repository), "rev-parse", "--show-toplevel"],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    require(root_result.returncode == 0, "tested repository is not a Git worktree")
+    require(
+        Path(root_result.stdout.strip()).resolve() == repository.resolve(),
+        "repository path must be the tested Git worktree root",
+    )
 
     producer = capsule["producer_skill"]
     require(isinstance(producer, dict), "producer_skill must be an object")
     require_exact_keys(producer, {"path", "sha256"}, "producer_skill")
     require_relative_path(producer["path"], "producer_skill.path")
     require_sha(producer["sha256"], "producer_skill.sha256")
-    if schema == SCHEMA_V2:
-        producer_blob = git_blob(
-            repository,
-            tested["revision"],
-            producer["path"],
-            "producer_skill",
-        )
-        require(
-            sha256_bytes(producer_blob) == producer["sha256"],
-            "producer_skill.sha256 does not match the pinned repository blob",
-        )
+    producer_blob = git_blob(
+        repository,
+        tested["revision"],
+        producer["path"],
+        "producer_skill",
+    )
+    require(
+        sha256_bytes(producer_blob) == producer["sha256"],
+        "producer_skill.sha256 does not match the pinned repository blob",
+    )
 
     boundary = capsule["boundary"]
     require(isinstance(boundary, list) and boundary, "boundary must be a non-empty array")
@@ -373,23 +355,22 @@ def validate_capsule(
                     f"{source_context}.end_line: expected integer at or after start_line")
             require_sha(source["content_sha256"], f"{source_context}.content_sha256")
             require(source["role"] in SOURCE_ROLES, f"{source_context}.role: unsupported value")
-            if schema == SCHEMA_V2:
-                blob = git_blob(
-                    repository,
-                    source["revision"],
-                    source["path"],
-                    source_context,
-                )
-                actual_source = source_range(
-                    blob,
-                    source["start_line"],
-                    source["end_line"],
-                    source_context,
-                )
-                require(
-                    sha256_bytes(actual_source) == source["content_sha256"],
-                    f"{source_context}.content_sha256 does not match pinned source bytes",
-                )
+            blob = git_blob(
+                repository,
+                source["revision"],
+                source["path"],
+                source_context,
+            )
+            actual_source = source_range(
+                blob,
+                source["start_line"],
+                source["end_line"],
+                source_context,
+            )
+            require(
+                sha256_bytes(actual_source) == source["content_sha256"],
+                f"{source_context}.content_sha256 does not match pinned source bytes",
+            )
 
     hunks = capsule["hunks"]
     require(isinstance(hunks, list) and hunks, "hunks must be a non-empty array")
@@ -399,10 +380,9 @@ def validate_capsule(
     for index, hunk in enumerate(hunks):
         context = f"hunks[{index}]"
         require(isinstance(hunk, dict), f"{context}: expected object")
-        hunk_keys = (
-            {"id", "destination", "boundary", "before_sha256", "after_sha256", "patch_sha256", "claim_ids", "unknowns"}
-            if schema == SCHEMA_V1
-            else {
+        require_exact_keys(
+            hunk,
+            {
                 "id",
                 "destination",
                 "destination_before_sha256",
@@ -410,26 +390,16 @@ def validate_capsule(
                 "patch_sha256",
                 "claim_ids",
                 "unknowns",
-            }
+            },
+            context,
         )
-        require_exact_keys(hunk, hunk_keys, context)
         hunk_id = hunk["id"]
         require(isinstance(hunk_id, str) and ID_RE.fullmatch(hunk_id) is not None,
                 f"{context}.id: invalid identifier")
         require(hunk_id not in hunk_ids, f"{context}.id: duplicate")
         hunk_ids.add(hunk_id)
         require_relative_path(hunk["destination"], f"{context}.destination")
-        if schema == SCHEMA_V1:
-            require(isinstance(hunk["boundary"], str) and hunk["boundary"].strip() == hunk["boundary"] and hunk["boundary"] != "",
-                    f"{context}.boundary: expected trimmed description")
-            digest_fields = ("before_sha256", "after_sha256", "patch_sha256")
-        else:
-            digest_fields = (
-                "destination_before_sha256",
-                "destination_after_sha256",
-                "patch_sha256",
-            )
-        for field in digest_fields:
+        for field in ("destination_before_sha256", "destination_after_sha256", "patch_sha256"):
             require_sha(hunk[field], f"{context}.{field}")
         require(isinstance(hunk["claim_ids"], list) and hunk["claim_ids"],
                 f"{context}.claim_ids: expected non-empty array")
@@ -446,27 +416,26 @@ def validate_capsule(
         actual_patch_sha = sha256_bytes(patch.encode("utf-8"))
         require(actual_patch_sha == hunk["patch_sha256"],
                 f"{context}.patch_sha256: displayed patch hashes to {actual_patch_sha}")
-        if schema == SCHEMA_V2:
-            destination_before = git_blob(
-                repository,
-                tested["revision"],
-                hunk["destination"],
-                context,
-            )
-            require(
-                sha256_bytes(destination_before) == hunk["destination_before_sha256"],
-                f"{context}.destination_before_sha256 does not match pinned destination",
-            )
-            destination_after = apply_unified_diff(
-                destination_before,
-                patch,
-                hunk["destination"],
-                context,
-            )
-            require(
-                sha256_bytes(destination_after) == hunk["destination_after_sha256"],
-                f"{context}.destination_after_sha256 does not match applied patch result",
-            )
+        destination_before = git_blob(
+            repository,
+            tested["revision"],
+            hunk["destination"],
+            context,
+        )
+        require(
+            sha256_bytes(destination_before) == hunk["destination_before_sha256"],
+            f"{context}.destination_before_sha256 does not match pinned destination",
+        )
+        destination_after = apply_unified_diff(
+            destination_before,
+            patch,
+            hunk["destination"],
+            context,
+        )
+        require(
+            sha256_bytes(destination_after) == hunk["destination_after_sha256"],
+            f"{context}.destination_after_sha256 does not match applied patch result",
+        )
         patch_hashes[hunk_id] = actual_patch_sha
 
     require(set(referenced_claims) == set(claim_by_id), "every claim must be referenced by exactly one hunk")
@@ -488,37 +457,23 @@ def validate_capsule(
     }
 
 
-def transcript_message(
-    path: Path,
-    expected_sha256: str | None,
-) -> tuple[str, str, str | None, str]:
+def transcript_message(path: Path, expected_sha256: str | None) -> tuple[str, str, str]:
     raw = path.read_bytes()
     actual_sha = sha256_bytes(raw)
     if expected_sha256 is not None:
         require_sha(expected_sha256, "expected transcript SHA-256")
         require(actual_sha == expected_sha256,
                 f"transcript SHA-256 mismatch: expected {expected_sha256}, got {actual_sha}")
-    completed: list[tuple[int, str]] = []
-    assistant_messages: list[str] = []
+    completed_lines: list[int] = []
     machine_outputs: list[tuple[int, str]] = []
     for line_number, line in enumerate(raw.splitlines(), 1):
         try:
             event = json.loads(line)
         except json.JSONDecodeError as exc:
             raise CapsuleError(f"transcript line {line_number} is invalid JSON: {exc}") from exc
-        if event.get("type") == "event_msg" and event.get("payload", {}).get("type") == "task_complete":
-            message = event["payload"].get("last_agent_message")
-            if isinstance(message, str):
-                completed.append((line_number, message))
         payload = event.get("payload", {})
-        if event.get("type") == "response_item" and payload.get("type") == "message" and payload.get("role") == "assistant":
-            text = "".join(
-                item.get("text", "")
-                for item in payload.get("content", [])
-                if isinstance(item, dict)
-            )
-            if text:
-                assistant_messages.append(text)
+        if event.get("type") == "event_msg" and payload.get("type") == "task_complete":
+            completed_lines.append(line_number)
         if event.get("type") == "response_item" and payload.get("type") == "custom_tool_call_output":
             output = payload.get("output")
             if isinstance(output, str):
@@ -534,84 +489,154 @@ def transcript_message(
                 output_text = ""
             if BUNDLE_BEGIN_RE.search(output_text) or BUNDLE_END in output_text:
                 machine_outputs.append((line_number, output_text))
-    if completed:
-        last_complete_line, completed_message = completed[-1]
-        eligible_bundles = [
-            output for line_number, output in machine_outputs
-            if line_number < last_complete_line
-        ]
-        if eligible_bundles:
-            message, bundle_sha = extract_machine_bundle(eligible_bundles[-1])
-            return message, actual_sha, bundle_sha, "machine_tool_output"
-        return completed_message, actual_sha, None, "completed_assistant_message"
-    require(assistant_messages, "transcript contains no completed assistant message")
-    return assistant_messages[-1], actual_sha, None, "incomplete_assistant_fallback"
+    require(completed_lines, "transcript contains no completed task")
+    last_complete_line = completed_lines[-1]
+    eligible_bundles = [
+        output for line_number, output in machine_outputs
+        if line_number < last_complete_line
+    ]
+    require(eligible_bundles, "transcript contains no machine-emitted evidence bundle before task completion")
+    message, bundle_sha = extract_machine_bundle(eligible_bundles[-1])
+    return message, actual_sha, bundle_sha
+
+
+def expect_rejected(action: Any, label: str) -> None:
+    try:
+        action()
+    except CapsuleError:
+        return
+    raise CapsuleError(f"self-test accepted {label}")
 
 
 def self_test() -> None:
+    import tempfile
+
     zeros = "0" * 64
-    ones = "1" * 64
-    revision = "a" * 40
-    patch = "--- a/AGENTS.md\n+++ b/AGENTS.md\n@@\n-old\n+new\n"
-    patch_sha = sha256_bytes(patch.encode())
-    capsule = {
-        "schema": SCHEMA_V1,
-        "tested_repository": {"root": "/tmp/repo", "revision": revision, "branch": "test"},
-        "producer_skill": {"path": ".agents/skills/onboard-repository/SKILL.md", "sha256": zeros},
-        "boundary": [
-            {"id": "B1", "kind": "git", "initial_evidence_sha256": zeros, "final_evidence_sha256": zeros, "result": "Pass", "notes": []},
-            {"id": "B2", "kind": "ignored_or_managed", "initial_evidence_sha256": ones, "final_evidence_sha256": ones, "result": "Pass", "notes": []},
-            {"id": "B3", "kind": "runtime", "initial_evidence_sha256": None, "final_evidence_sha256": None, "result": "Unknown", "notes": ["unobservable"]},
-            {"id": "B4", "kind": "temporary_paths", "initial_evidence_sha256": zeros, "final_evidence_sha256": zeros, "result": "Pass", "notes": []},
-        ],
-        "claims": [
-            {"id": "C1", "hunk_id": "H1", "text": "New guidance.", "classification": "Authoritative", "sources": [
-                {"revision": revision, "path": "docs/WORKFLOW.md", "start_line": 1, "end_line": 1, "content_sha256": zeros, "role": "authority"}
-            ]}
-        ],
-        "hunks": [
-            {"id": "H1", "destination": "AGENTS.md", "boundary": "managed marker", "before_sha256": zeros, "after_sha256": ones, "patch_sha256": patch_sha, "claim_ids": ["C1"], "unknowns": []}
-        ],
-        "limitations": ["runtime unobservable"],
-    }
-    raw_json = json.dumps(capsule, indent=2, sort_keys=True)
-    capsule_begin, capsule_end = CAPSULE_MARKERS[SCHEMA_V1]
-    message = (
-        "<!-- ONBOARDING_PATCH:H1:BEGIN -->\n```diff\n"
-        + patch
-        + "```\n<!-- ONBOARDING_PATCH:H1:END -->\n"
-        + capsule_begin
-        + "\n```json\n"
-        + raw_json
-        + "\n```\n"
-        + capsule_end
-    )
-    extracted, _ = extract_capsule(message)
-    result = validate_capsule(extracted, message)
-    require(result["hunk_count"] == 1, "self-test valid fixture failed")
-    extracted["hunks"][0]["patch_sha256"] = zeros
-    try:
-        validate_capsule(extracted, message)
-    except CapsuleError:
-        pass
-    else:
-        raise CapsuleError("self-test invalid fixture was accepted")
+    skill = b"producer skill\n"
+    workflow = b"Authoritative workflow line.\n"
+    agents_before = b"# Agent Instructions\n\nold\n"
+    agents_after = b"# Agent Instructions\n\nnew\n"
+    patch = "--- a/AGENTS.md\n+++ b/AGENTS.md\n@@ -1,3 +1,3 @@\n # Agent Instructions\n \n-old\n+new\n"
+    with tempfile.TemporaryDirectory() as temp:
+        repository = Path(temp).resolve()
 
-    bundle_inner = message + "\n"
-    bundle_sha = sha256_bytes(bundle_inner.encode("utf-8"))
-    bundle_output = (
-        "tool wrapper\n"
-        f"<!-- ONBOARDING_EVIDENCE_BUNDLE_V2:BEGIN sha256={bundle_sha} -->\n"
-        + bundle_inner
-        + BUNDLE_END
-        + "\n"
-    )
-    extracted_bundle, extracted_bundle_sha = extract_machine_bundle(bundle_output)
-    require(extracted_bundle == bundle_inner, "machine-bundle extraction changed bytes")
-    require(extracted_bundle_sha == bundle_sha, "machine-bundle extraction changed digest")
+        def git(*args: str) -> str:
+            return subprocess.run(
+                ["git", "-C", str(repository), *args],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            ).stdout.strip()
 
-    v2_original = b"one\ntwo\nthree\n"
-    v2_patch = (
+        git("init", "-q")
+        for relative, data in (
+            (".agents/skills/onboard-repository/SKILL.md", skill),
+            ("docs/WORKFLOW.md", workflow),
+            ("AGENTS.md", agents_before),
+        ):
+            target = repository / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+        git("add", "-A")
+        git("-c", "user.name=self-test", "-c", "user.email=self-test@example.invalid",
+            "-c", "core.autocrlf=false", "commit", "-q", "-m", "fixture")
+        revision = git("rev-parse", "HEAD")
+        capsule = {
+            "schema": SCHEMA,
+            "tested_repository": {"root": str(repository), "revision": revision, "branch": "self-test"},
+            "producer_skill": {"path": ".agents/skills/onboard-repository/SKILL.md", "sha256": sha256_bytes(skill)},
+            "boundary": [
+                {"id": "B1", "kind": "git", "initial_evidence_sha256": zeros, "final_evidence_sha256": zeros, "result": "Pass", "notes": []},
+                {"id": "B2", "kind": "ignored_or_managed", "initial_evidence_sha256": zeros, "final_evidence_sha256": zeros, "result": "Pass", "notes": []},
+                {"id": "B3", "kind": "runtime", "initial_evidence_sha256": None, "final_evidence_sha256": None, "result": "Unknown", "notes": ["unobservable"]},
+                {"id": "B4", "kind": "temporary_paths", "initial_evidence_sha256": zeros, "final_evidence_sha256": zeros, "result": "Pass", "notes": []},
+            ],
+            "claims": [
+                {"id": "C1", "hunk_id": "H1", "text": "New guidance.", "classification": "Authoritative", "sources": [
+                    {"revision": revision, "path": "docs/WORKFLOW.md", "start_line": 1, "end_line": 1,
+                     "content_sha256": sha256_bytes(workflow), "role": "authority"}
+                ]}
+            ],
+            "hunks": [
+                {"id": "H1", "destination": "AGENTS.md",
+                 "destination_before_sha256": sha256_bytes(agents_before),
+                 "destination_after_sha256": sha256_bytes(agents_after),
+                 "patch_sha256": sha256_bytes(patch.encode("utf-8")),
+                 "claim_ids": ["C1"], "unknowns": []}
+            ],
+            "limitations": ["runtime unobservable"],
+        }
+
+        def inner(value: dict[str, Any]) -> str:
+            return (
+                "<!-- ONBOARDING_PATCH:H1:BEGIN -->\n```diff\n"
+                + patch
+                + "```\n<!-- ONBOARDING_PATCH:H1:END -->\n"
+                + CAPSULE_BEGIN
+                + "\n```json\n"
+                + json.dumps(value, indent=2, sort_keys=True)
+                + "\n```\n"
+                + CAPSULE_END
+                + "\n"
+            )
+
+        def bundle(value: dict[str, Any]) -> str:
+            body = inner(value)
+            digest = sha256_bytes(body.encode("utf-8"))
+            return (
+                "tool wrapper\n"
+                f"<!-- ONBOARDING_EVIDENCE_BUNDLE_V2:BEGIN sha256={digest} -->\n"
+                + body
+                + BUNDLE_END
+                + "\n"
+            )
+
+        def check(output: str) -> dict[str, Any]:
+            message, _ = extract_machine_bundle(output)
+            extracted, _ = extract_capsule(message)
+            return validate_capsule(extracted, message, repository)
+
+        def transcript(events: list[dict[str, Any]]) -> Path:
+            path = repository / "transcript.jsonl"
+            path.write_text("".join(json.dumps(event) + "\n" for event in events), encoding="utf-8")
+            return path
+
+        valid_bundle = bundle(capsule)
+        require(check(valid_bundle)["hunk_count"] == 1, "self-test valid v2 bundle failed")
+
+        bundle_event = {"type": "response_item",
+                        "payload": {"type": "custom_tool_call_output", "output": valid_bundle}}
+        complete_event = {"type": "event_msg",
+                          "payload": {"type": "task_complete", "last_agent_message": "done"}}
+        message, _, _ = transcript_message(transcript([bundle_event, complete_event]), None)
+        require(message == inner(capsule), "self-test transcript bundle extraction changed bytes")
+
+        expect_rejected(
+            lambda: check(bundle({**capsule, "hunks": [{**capsule["hunks"][0], "destination_after_sha256": zeros}]})),
+            "a tampered destination digest",
+        )
+        expect_rejected(
+            lambda: check(valid_bundle.replace("New guidance.", "Other guidance.")),
+            "a bundle whose bytes differ from its digest",
+        )
+        expect_rejected(
+            lambda: check(bundle({**capsule, "schema": "onboarding-evidence-capsule/v1"})),
+            "a v1 capsule schema",
+        )
+        expect_rejected(
+            lambda: check(inner(capsule)),
+            "a capsule outside a machine bundle",
+        )
+        final_message_event = {"type": "event_msg",
+                               "payload": {"type": "task_complete", "last_agent_message": inner(capsule)}}
+        expect_rejected(
+            lambda: transcript_message(transcript([final_message_event]), None),
+            "a final-message capsule transcript",
+        )
+
+    original = b"one\ntwo\nthree\n"
+    diff = (
         "diff --git a/docs/test.md b/docs/test.md\n"
         "index 0000000..1111111 100644\n"
         "--- a/docs/test.md\n"
@@ -622,14 +647,14 @@ def self_test() -> None:
         "+changed\n"
         " three\n"
     )
-    v2_after = apply_unified_diff(v2_original, v2_patch, "docs/test.md", "self-test-v2")
-    require(v2_after == b"one\nchanged\nthree\n", "v2 in-memory patch application failed")
-    try:
-        apply_unified_diff(v2_original.replace(b"two", b"different"), v2_patch, "docs/test.md", "self-test-v2")
-    except CapsuleError:
-        pass
-    else:
-        raise CapsuleError("v2 preimage mismatch was accepted")
+    require(
+        apply_unified_diff(original, diff, "docs/test.md", "self-test") == b"one\nchanged\nthree\n",
+        "in-memory patch application failed",
+    )
+    expect_rejected(
+        lambda: apply_unified_diff(original.replace(b"two", b"different"), diff, "docs/test.md", "self-test"),
+        "a patch preimage mismatch",
+    )
 
 
 def main() -> int:
@@ -645,30 +670,24 @@ def main() -> int:
             print(json.dumps({"valid": True, "self_test": "passed"}, sort_keys=True))
             return 0
         if args.transcript is not None:
-            message, transcript_sha, bundle_sha, evidence_source = transcript_message(
+            message, transcript_sha, bundle_sha = transcript_message(
                 args.transcript,
                 args.expected_transcript_sha256,
             )
+            evidence_source = "machine_tool_output"
         else:
             require(args.expected_transcript_sha256 is None,
                     "--expected-transcript-sha256 requires --transcript")
-            stdin_message = sys.stdin.read()
+            message, bundle_sha = extract_machine_bundle(sys.stdin.read())
             transcript_sha = None
-            if BUNDLE_BEGIN_RE.search(stdin_message) or BUNDLE_END in stdin_message:
-                message, bundle_sha = extract_machine_bundle(stdin_message)
-                evidence_source = "stdin_machine_bundle"
-            else:
-                message = stdin_message
-                bundle_sha = None
-                evidence_source = "stdin"
+            evidence_source = "stdin_machine_bundle"
         capsule, capsule_sha = extract_capsule(message)
         result = validate_capsule(capsule, message, args.repository)
         result.update({"valid": True, "capsule_sha256": capsule_sha})
         if transcript_sha is not None:
             result["transcript_sha256"] = transcript_sha
         result["evidence_source"] = evidence_source
-        if bundle_sha is not None:
-            result["bundle_sha256"] = bundle_sha
+        result["bundle_sha256"] = bundle_sha
         print(json.dumps(result, sort_keys=True))
         return 0
     except (CapsuleError, OSError) as exc:
