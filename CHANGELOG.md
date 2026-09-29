@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-09-29 - PR #4
+
+- chore(docs): remove EOL high-risk-story compatibility templates (@ledo9124)
+- Merge commit: `32388a4dc627f41402dcd635c8b53a2c18ce6d1e`
+- Harness core release: not required
+- Changed files: 5 total
+  - `docs/templates/high-risk-story/design.md`
+  - `docs/templates/high-risk-story/execplan.md`
+  - `docs/templates/high-risk-story/overview.md`
+  - `docs/templates/high-risk-story/validation.md`
+  - `tests/docs/test-doc-contracts.sh`
+
 ## 2026-09-29 - PR #2
 
 - feat(release): publish and self-update from the ledo9124 fork (@ledo9124)
