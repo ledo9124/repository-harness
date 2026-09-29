@@ -8,26 +8,51 @@ Active | Blocked | Completed
 
 ## Outcome
 
-Describe the observable result this work must produce.
+Describe the observable result this work must produce. Keep this stable unless
+the accepted request or authority changes.
+
+## Authority And Constraints
+
+- Authority: link the source that owns material product or technical policy.
+- Hard constraints: list accepted boundaries that cannot change without new
+  authority.
+
+Do not list the current implementation or chosen approach as a hard constraint
+unless authority explicitly requires it.
 
 ## Context
 
-Link the relevant product, architecture, decision, code, and validation truth.
+Link the relevant product, architecture, decisions, code, and validation truth.
 
-## Scope
+## Scope And Ownership
 
 In scope:
 
-- Item.
+- Item and mutation owner when work is coordinated.
 
 Out of scope:
 
 - Item.
 
+Dependencies:
+
+- Scope, owner, or decision this work depends on.
+
+## Current Decisions And Assumptions
+
+Current decisions:
+
+- Chosen approach and reason. A current decision may be superseded.
+
+Assumptions and uncertainties:
+
+- Belief still subject to evidence, plus the evidence that would confirm or
+  weaken it.
+
 ## Approach
 
-Describe the smallest coherent sequence. Update this section when evidence
-changes the approach.
+Describe the smallest coherent sequence. Treat it as a working approach, not an
+immutable specification. Update it when material evidence changes the path.
 
 ## Risks And Recovery
 
@@ -38,9 +63,10 @@ changes the approach.
 
 - [ ] Step.
 
-## Decisions
+## Evidence And Revisions
 
-- YYYY-MM-DD: Task-local decision and reason.
+- YYYY-MM-DD: Finding or measurement; affected decision/assumption and scopes;
+  resulting revision, propagation, or conscious no-change decision.
 
 Promote lasting product or architecture decisions into `docs/decisions/`.
 
@@ -52,5 +78,6 @@ Promote lasting product or architecture decisions into `docs/decisions/`.
 
 ## Result
 
-Complete after implementation. Record the verified outcome, limitations, and
-follow-up before moving the plan to `docs/plans/completed/`.
+Complete after implementation. Record the verified outcome, limitations,
+remaining assumptions, and follow-up before moving the plan to
+`docs/plans/completed/`.
