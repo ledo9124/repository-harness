@@ -9,8 +9,9 @@ use sha2::{Digest, Sha256};
 
 use crate::application::{InstallationStatePort, PortError};
 use crate::domain::{
-    ApplyReceipt, BaselineFile, ContentHash, FrozenWorkspaceFile, InstallationState, RelativePath,
-    ResolutionConflict, UpdateResolutionSession, WorkspaceMutation,
+    normalize_line_endings, ApplyReceipt, BaselineFile, ContentHash, FrozenWorkspaceFile,
+    InstallationState, RelativePath, ResolutionConflict, UpdateResolutionSession,
+    WorkspaceMutation,
 };
 
 #[derive(Clone, Copy, Default)]
@@ -592,18 +593,17 @@ fn load_state(root: &Path) -> Result<Option<InstallationState>, PortError> {
             .map_err(|error| PortError::new(error.to_string()))?;
         let base_path = state_root.join("base").join(path.as_str());
         validate_state_base_path(&state_root, &base_path)?;
-        let content = fs::read(&base_path).map_err(|error| {
+        let raw = fs::read(&base_path).map_err(|error| {
             PortError::new(format!("could not read base {}: {error}", path.as_str()))
         })?;
-        let actual = hash_bytes(&content)?;
-        if actual != expected {
+        let Some(content) = verified_base_content(&raw, &expected)? else {
             return Err(PortError::new(format!(
                 "base hash mismatch for {}: expected {}, got {}",
                 path,
                 expected.as_str(),
-                actual.as_str()
+                hash_bytes(&raw)?.as_str()
             )));
-        }
+        };
         files.push(BaselineFile {
             path,
             content,
@@ -619,6 +619,30 @@ fn load_state(root: &Path) -> Result<Option<InstallationState>, PortError> {
         .validate()
         .map_err(|error| PortError::new(error.to_string()))?;
     Ok(Some(state))
+}
+
+/// Git may re-check out base files with other line endings than were hashed:
+/// LF bytes as CRLF, or CRLF bytes written by an older Windows release as LF.
+/// Return the form the manifest hashed.
+fn verified_base_content(raw: &[u8], expected: &ContentHash) -> Result<Option<Vec<u8>>, PortError> {
+    if hash_bytes(raw)? == *expected {
+        return Ok(Some(raw.to_vec()));
+    }
+    let lf = normalize_line_endings(raw);
+    if hash_bytes(&lf)? == *expected {
+        return Ok(Some(lf));
+    }
+    let mut crlf = Vec::with_capacity(lf.len() + lf.len() / 32);
+    for &byte in &lf {
+        if byte == b'\n' {
+            crlf.push(b'\r');
+        }
+        crlf.push(byte);
+    }
+    if hash_bytes(&crlf)? == *expected {
+        return Ok(Some(crlf));
+    }
+    Ok(None)
 }
 
 fn write_state(state_root: &Path, state: &InstallationState, id: &str) -> Result<(), PortError> {
@@ -923,6 +947,27 @@ mod tests {
             b"local"
         );
         assert_eq!(store.load(root.path()).unwrap().unwrap(), state(b"base"));
+    }
+
+    #[test]
+    fn loads_base_checked_out_with_other_line_endings() {
+        let store = FileSystemInstallationState;
+        let base_file = |root: &Path| root.join(".harness-core/base/docs/WORKFLOW.md");
+        for (hashed, checked_out) in [
+            (&b"a\nb\n"[..], &b"a\r\nb\r\n"[..]),
+            (&b"a\r\nb\r\n"[..], &b"a\nb\n"[..]),
+        ] {
+            let root = tempfile::tempdir().unwrap();
+            store.apply(root.path(), &state(hashed), &[]).unwrap();
+            fs::write(base_file(root.path()), checked_out).unwrap();
+            assert_eq!(store.load(root.path()).unwrap().unwrap(), state(hashed));
+        }
+
+        let root = tempfile::tempdir().unwrap();
+        store.apply(root.path(), &state(b"a\nb\n"), &[]).unwrap();
+        fs::write(base_file(root.path()), b"a\nc\n").unwrap();
+        let error = store.load(root.path()).unwrap_err().to_string();
+        assert!(error.contains("base hash mismatch for docs/WORKFLOW.md"));
     }
 
     #[test]

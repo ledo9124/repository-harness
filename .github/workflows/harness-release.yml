@@ -119,6 +119,8 @@ jobs:
           dist/${{ matrix.binary }} update --candidate --directory $root --dry-run
           dist/${{ matrix.binary }} status --directory $root
           dist/${{ matrix.binary }} doctor --directory $root
+          $crlf = Get-ChildItem -Recurse -File $root | Where-Object { [IO.File]::ReadAllBytes($_.FullName) -contains 13 }
+          if ($crlf) { throw "release payload embeds carriage returns: $($crlf.FullName -join ', ')" }
       - uses: actions/upload-artifact@v6
         with:
           name: harness-core-${{ matrix.platform }}

@@ -3,3 +3,8 @@
 *.jsonl text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
+# The harness binary embeds these files; every platform build must embed the
+# same LF bytes, whatever the build checkout's autocrlf setting.
+*.md text eol=lf
+*.py text eol=lf
+*.txt text eol=lf

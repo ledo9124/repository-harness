@@ -5,10 +5,11 @@ use crate::application::{
     CoreDistributionPort, InstallationStatePort, PortError, ThreeWayMergePort,
 };
 use crate::domain::{
-    BaselineFile, ConflictReason, CoreDistribution, DoctorCheck, DoctorReport, FileChangeKind,
-    FileStatus, FrozenWorkspaceFile, InstallReport, InstallationCondition, InstallationState,
-    MergeOutcome, PlannedFileChange, ResolutionConflict, StatusReport, UpdateConflict,
-    UpdateReport, UpdateResolutionSession, WorkspaceMutation,
+    normalize_line_endings, same_text, BaselineFile, ConflictReason, CoreDistribution,
+    DoctorCheck, DoctorReport, FileChangeKind, FileStatus, FrozenWorkspaceFile, InstallReport,
+    InstallationCondition, InstallationState, MergeOutcome, PlannedFileChange,
+    ResolutionConflict, StatusReport, UpdateConflict, UpdateReport, UpdateResolutionSession,
+    WorkspaceMutation,
 };
 
 pub struct CoreApplication<D, S, M> {
@@ -294,7 +295,7 @@ where
                     }
                     match self.merge_contents(&base.content, &local, &next.content)? {
                         MergeOutcome::Clean(content) => {
-                            let kind = if content == local {
+                            let kind = if same_text(&content, &local) {
                                 FileChangeKind::Preserve
                             } else {
                                 mutations.push(WorkspaceMutation::Write {
@@ -341,7 +342,7 @@ where
                     reason: ConflictReason::ExistingUnmanagedPath,
                     detail: "new upstream managed path already exists locally".to_owned(),
                 }),
-                (Some(base), None, Some(local)) if local == base.content => {
+                (Some(base), None, Some(local)) if same_text(&local, &base.content) => {
                     changes.push(PlannedFileChange {
                         path: path.clone(),
                         kind: FileChangeKind::Delete,
@@ -422,7 +423,7 @@ where
                 path: base.path.clone(),
                 modified: local
                     .as_ref()
-                    .is_some_and(|content| content != &base.content),
+                    .is_some_and(|content| !same_text(content, &base.content)),
                 missing: local.is_none(),
             });
         }
@@ -519,13 +520,19 @@ where
         local: &[u8],
         upstream: &[u8],
     ) -> Result<MergeOutcome, ApplicationError> {
-        if local == base {
+        if same_text(local, base) {
             return Ok(MergeOutcome::Clean(upstream.to_vec()));
         }
-        if upstream == base || local == upstream {
+        if same_text(upstream, base) || same_text(local, upstream) {
             return Ok(MergeOutcome::Clean(local.to_vec()));
         }
-        self.merger.merge(base, local, upstream).map_err(Into::into)
+        self.merger
+            .merge(
+                &normalize_line_endings(base),
+                &normalize_line_endings(local),
+                &normalize_line_endings(upstream),
+            )
+            .map_err(Into::into)
     }
 }
 
@@ -789,5 +796,42 @@ mod tests {
         let report = app.update(Path::new("."), false).unwrap();
         assert!(!report.applied);
         assert_eq!(report.conflicts.len(), 1);
+    }
+
+    #[test]
+    fn line_ending_checkout_is_not_a_consumer_change() {
+        let path = RelativePath::parse("AGENTS.md").unwrap();
+        let installed = || Some(state_from_distribution(&distribution("1.0.0", b"a\nb\n")));
+
+        let state = StateFixture::default();
+        state
+            .files
+            .borrow_mut()
+            .insert(path.clone(), b"a\r\nb\r\n".to_vec());
+        *state.installation.borrow_mut() = installed();
+        let app = CoreApplication::new(
+            DistributionFixture(distribution("1.0.0", b"a\nb\n")),
+            state,
+            MergeFixture,
+        );
+        assert!(!app.status(Path::new(".")).unwrap().files[0].modified);
+        let report = app.update(Path::new("."), false).unwrap();
+        assert_eq!(report.changes[0].kind, FileChangeKind::Preserve);
+
+        let state = StateFixture::default();
+        state
+            .files
+            .borrow_mut()
+            .insert(path.clone(), b"a\r\nb\r\n".to_vec());
+        *state.installation.borrow_mut() = installed();
+        let app = CoreApplication::new(
+            DistributionFixture(distribution("2.0.0", b"a\nc\n")),
+            state,
+            MergeFixture,
+        );
+        let report = app.update(Path::new("."), false).unwrap();
+        assert!(report.applied, "a CRLF checkout must not conflict");
+        assert_eq!(report.changes[0].kind, FileChangeKind::Update);
+        assert_eq!(app.state.files.borrow().get(&path).unwrap(), b"a\nc\n");
     }
 }

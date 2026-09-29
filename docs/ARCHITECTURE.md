@@ -52,6 +52,11 @@ Consumer provenance lives under `.harness-core/`:
 The manifest and base contain only Harness-managed core state. They are not a
 task database or product-memory store.
 
+Every platform build embeds the same LF payload. Because consumers commit this
+state and Git may convert line endings, a base file verifies in its CRLF or LF
+form, and managed files are compared and merged ignoring that difference
+(decision 0031).
+
 ## Update Transaction
 
 ```text
