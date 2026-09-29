@@ -78,14 +78,14 @@ The exact payload is declared in
 From a target repository:
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh?$(date +%s)" |
+curl -fsSL "https://raw.githubusercontent.com/ledo9124/repository-harness/main/scripts/install-harness.sh?$(date +%s)" |
   bash -s -- --yes
 ```
 
 On PowerShell:
 
 ```powershell
-& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.ps1"))) -Yes
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/ledo9124/repository-harness/main/scripts/install-harness.ps1"))) -Yes
 ```
 
 Use `--merge` / `-Merge` to preserve existing files and add only missing
