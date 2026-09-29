@@ -3,7 +3,13 @@
 Decision records preserve lasting product, architecture, compatibility,
 security, data-ownership, and validation choices.
 
-Use `docs/templates/decision.md`. Task-local choices stay in the active plan.
+Use `docs/templates/decision.md`. Record the accepted outcome and constraints
+separately from the chosen approach. State the assumptions and evidence behind
+the approach plus material conditions that should reopen it. Accepted decisions
+are inherited by later work, but may be superseded by new authority or evidence;
+they are not the original user goal.
+
+Task-local choices and uncertainties stay in the active plan.
 
 ## Current Upstream Decisions
 
@@ -16,6 +22,7 @@ Use `docs/templates/decision.md`. Task-local choices stay in the active plan.
 | 0026 | Explicit Onboarding Skills In Default Core |
 | 0027 | End Protocol V1 And Focus The Repository Protocol |
 | 0028 | Authoritative Invariant Encoding |
+| 0029 | Outcome-Preserving Adaptive Workflow |
 
 These decisions describe upstream Harness. Installed consumers begin with an
 empty decision index and add only real consumer choices.
@@ -32,5 +39,7 @@ product behavior.
 - a lasting product or architecture choice changes;
 - public compatibility or data ownership changes;
 - security or recovery policy changes;
-- validation is materially added, removed, or weakened; or
+- validation is materially added, removed, or weakened;
+- a working decision needs durable assumptions, evidence, or reopen conditions;
+  or
 - the source-of-truth hierarchy changes.
