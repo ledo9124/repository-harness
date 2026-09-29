@@ -90,6 +90,7 @@ compatibility_paths=(
   docs/contracts/harness-orchestration-v1.md
   docs/compatibility
   docs/stories
+  docs/templates/high-risk-story
   .harness/core-state
   .harness/changesets
 )
