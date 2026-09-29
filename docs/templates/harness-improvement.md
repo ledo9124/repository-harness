@@ -19,7 +19,9 @@ retries, and known limitations.
 ## Earliest Gap
 
 Classify the first missing context, capability, domain owner, authority, proof,
-feedback, delivery, or environment boundary.
+decision-flow, feedback, delivery, or environment boundary. Decision-flow gaps
+include a working choice hardened into a constraint, an invalidation that did
+not reach dependent work, or unclear mutation ownership.
 
 ## Correct Owner
 
