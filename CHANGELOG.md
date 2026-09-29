@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-09-29 - PR #10
+
+- feat(skills): end evidence capsule v1 and final-message capsules (@ledo9124)
+- Merge commit: `42c32ab71a9d597986ef0d15a9df377cea311ea6`
+- Harness core candidate: `harness-v0.1.14` (publication requires platform proof)
+- Changed files: 12 total
+  - `.agents/skills/audit-onboarding-proposal/SKILL.md`
+  - `.agents/skills/audit-onboarding-proposal/scripts/validate_evidence_capsule.py`
+  - `.agents/skills/onboard-repository/SKILL.md`
+  - `.agents/skills/onboard-repository/references/evidence-capsule-v1.md`
+  - `.agents/skills/onboard-repository/references/evidence-capsule-v2.md`
+  - `crates/harness/src/infrastructure/embedded_distribution.rs`
+  - `docs/decisions/0030-end-evidence-capsule-v1.md`
+  - `docs/decisions/README.md`
+  - `scripts/harness-install-files.txt`
+  - `scripts/validate-premerge.sh`
+  - `tests/docs/test-doc-contracts.sh`
+  - `tests/installer/assert-agent-authority-contract.sh`
+
 ## 2026-09-29 - PR #9
 
 - feat(agents): plans are not authority; settled choices are not open (@ledo9124)
