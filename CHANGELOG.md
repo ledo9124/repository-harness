@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-09-29 - PR #2
+
+- feat(release): publish and self-update from the ledo9124 fork (@ledo9124)
+- Merge commit: `788ec4ed1ce10b1cb919411e27e33fbfa1c4f996`
+- Harness core candidate: `harness-v0.1.11` (publication requires platform proof)
+- Changed files: 5 total
+  - `Cargo.toml`
+  - `README.md`
+  - `crates/harness/src/infrastructure/release_handoff.rs`
+  - `scripts/install-harness.ps1`
+  - `scripts/install-harness.sh`
+
 ## 2026-08-13 - PR #66
 
 - fix(installer): reject unknown PowerShell parameters (@hoangnb24)
