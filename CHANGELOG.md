@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-29 - PR #6
+
+- docs(plans): record removed boundary-proof experiment (@ledo9124)
+- Merge commit: `606836cea3ff81010a72a6d6c76bce0061b28d36`
+- Harness core release: not required
+- Changed files: 1 total
+  - `docs/plans/completed/harness-improvement-boundary-proof.md`
+
 ## 2026-09-29 - PR #3
 
 - docs(plans): record removed plan-working-premises experiment (@ledo9124)
