@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-29 - PR #7
+
+- docs(plans): record plans-are-not-authority experiment (@ledo9124)
+- Merge commit: `6ba3ef7d144174d88ef9033d695640278d8dcafb`
+- Harness core release: not required
+- Changed files: 1 total
+  - `docs/plans/completed/harness-improvement-plan-authority.md`
+
 ## 2026-09-29 - PR #6
 
 - docs(plans): record removed boundary-proof experiment (@ledo9124)
