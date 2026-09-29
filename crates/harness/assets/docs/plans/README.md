@@ -2,7 +2,8 @@
 
 Execution plans are Git-native working memory for complex tasks. They preserve
 enough context for another agent or human to resume work without reconstructing
-intent from chat history or a partial diff.
+intent from chat history or a partial diff, and they are working models rather
+than immutable specifications.
 
 ## When To Create A Plan
 
@@ -16,17 +17,31 @@ Use `docs/templates/exec-plan.md` and place the file under `active/`.
 For an explicitly authorized baseline-to-rerun Harness experiment, use
 `docs/templates/harness-improvement.md` instead.
 
+## Working Model
+
+Keep the requested outcome and hard constraints distinct from current decisions
+and assumptions. Existing implementation and earlier choices are not hard
+constraints unless repository authority says they are.
+
+When material evidence invalidates a premise, record the finding, revise the
+affected approach or decision at its owner, and propagate the impact before
+dependent work continues. During coordinated work, keep one active mutation
+owner per overlapping scope while allowing contributors to inspect across
+boundaries and report evidence.
+
 ## Lifecycle
 
 ```text
 docs/plans/active/<slug>.md
-  -> update progress and decisions during implementation
+  -> keep outcome, constraints, ownership, progress, evidence, and validation current
+  -> revise working decisions when material evidence requires it
   -> record final validation and result
   -> move to docs/plans/completed/<slug>.md
 ```
 
 The plan is the primary task artifact. Promote a lasting product or architecture
-decision into `docs/decisions/`; keep task-local choices in the plan.
+decision into `docs/decisions/`; keep task-local choices and assumptions in the
+plan.
 
 ## Active Plans
 
