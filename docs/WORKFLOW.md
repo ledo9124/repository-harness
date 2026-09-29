@@ -60,7 +60,7 @@ For architecture, reliability, security, or quality boundaries:
 3. Require positive proof for allowed behavior and negative proof for the
    targeted violation.
 4. Report local, hook, CI, and branch-protection enforcement separately.
-   Presence alone does not prove merge blocking.
+   Checked-in CI presence alone does not prove merge blocking.
 
 Do not install hooks or change CI, merge, or branch-protection settings unless
 separately authorized. See [encoding invariants](patterns/encoding-invariants.md).
