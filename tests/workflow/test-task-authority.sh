@@ -44,7 +44,7 @@ assert_no_hidden_control_plane
 
 # Durable work uses one Git-native plan and no parallel task database.
 plan="$fixture/docs/plans/active/refund-provider-migration.md"
-printf '%s\n' +  '# Execution Plan: Refund Provider Migration' +  '## Status' 'Active' +  '## Outcome' 'Move refunds without losing accepted requests.' +  '## Context' 'Current provider contract.' +  '## Scope' 'Provider boundary only.' +  '## Approach' 'Freeze, migrate, verify.' +  '## Risks And Recovery' 'Retain the old provider until reconciliation passes.' +  '## Progress' '- [ ] Reconciliation proof.' +  '## Decisions' '- No task-local decision yet.' +  '## Validation' '- Focused proof pending.' +  '## Result' 'Pending.' >"$plan"
+printf '%s\n' +  '# Execution Plan: Refund Provider Migration' +  '## Status' 'Active' +  '## Outcome' 'Move refunds without losing accepted requests.' +  '## Authority And Constraints' 'Accepted refund contract; no request loss.' +  '## Context' 'Current provider contract.' +  '## Scope And Ownership' 'Provider boundary only; one mutation owner.' +  '## Current Decisions And Assumptions' 'Freeze-and-migrate is revisable if evidence invalidates it.' +  '## Approach' 'Freeze, migrate, verify.' +  '## Risks And Recovery' 'Retain the old provider until reconciliation passes.' +  '## Progress' '- [ ] Reconciliation proof.' +  '## Evidence And Revisions' '- No invalidated premise yet.' +  '## Validation' '- Focused proof pending.' +  '## Result' 'Pending.' >"$plan"
 [[ -f "$plan" ]]
 assert_no_hidden_control_plane
 
