@@ -41,6 +41,7 @@ current_files=(
   docs/decisions/0028-authoritative-invariant-encoding.md
   docs/decisions/0029-plans-are-not-authority.md
   docs/decisions/0030-end-evidence-capsule-v1.md
+  docs/decisions/0031-line-ending-independent-core-bytes.md
   docs/research/application-legibility.md
   .github/ISSUE_TEMPLATE/real-world-example.md
 )

@@ -260,6 +260,25 @@ pub struct ApplyReceipt {
     pub backup_path: Option<String>,
 }
 
+/// Rewrites CRLF line endings to LF. Git may check a managed file out with
+/// either ending, so managed text is compared and merged in this form.
+pub fn normalize_line_endings(content: &[u8]) -> Vec<u8> {
+    let mut normalized = Vec::with_capacity(content.len());
+    let mut bytes = content.iter().peekable();
+    while let Some(&byte) = bytes.next() {
+        if byte == b'\r' && bytes.peek() == Some(&&b'\n') {
+            continue;
+        }
+        normalized.push(byte);
+    }
+    normalized
+}
+
+/// Whether two managed files differ only in CRLF versus LF line endings.
+pub fn same_text(left: &[u8], right: &[u8]) -> bool {
+    left == right || normalize_line_endings(left) == normalize_line_endings(right)
+}
+
 #[derive(Debug)]
 pub enum DomainError {
     InvalidRelativePath(String),
@@ -325,5 +344,14 @@ mod tests {
             duplicate.validate(),
             Err(DomainError::DuplicatePath(_))
         ));
+    }
+
+    #[test]
+    fn managed_text_compares_across_line_endings_only() {
+        assert_eq!(normalize_line_endings(b"a\r\nb\nc\r"), b"a\nb\nc\r");
+        assert!(same_text(b"a\r\nb\r\n", b"a\nb\n"));
+        assert!(same_text(b"# A\n\nb\r\n", b"# A\r\n\r\nb\n"));
+        assert!(!same_text(b"a\nb\n", b"a\nc\n"));
+        assert!(!same_text(b"a\rb", b"a\nb"));
     }
 }

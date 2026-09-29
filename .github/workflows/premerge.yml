@@ -42,6 +42,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Build Harness
         run: cargo build -p harness --locked
+      - name: Require an LF payload from a Windows checkout
+        run: cargo test -p harness --locked --lib embedded_payload_uses_lf_line_endings_on_every_platform
       - name: Run PowerShell installer modes
         shell: pwsh
         run: tests/installer/test-install-harness-modes.ps1

@@ -228,4 +228,15 @@ mod tests {
         assert!(String::from_utf8_lossy(&invariant_metadata.content)
             .contains("allow_implicit_invocation: true"));
     }
+
+    #[test]
+    fn embedded_payload_uses_lf_line_endings_on_every_platform() {
+        for file in EmbeddedCoreDistribution.current().unwrap().files {
+            assert!(
+                !file.content.contains(&b'\r'),
+                "{} embeds a carriage return; the build checkout must honor .gitattributes eol=lf",
+                file.path
+            );
+        }
+    }
 }
