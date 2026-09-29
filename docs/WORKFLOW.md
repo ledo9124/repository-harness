@@ -18,7 +18,9 @@ Before editing, identify authority for new externally observable policy. If
 materially different choices remain, stop and request the smallest decision.
 Configurable defaults are not authority. `Add rate limiting` without a quota,
 identity key, enforcement topology, or response contract must stop; an accepted
-20-requests-per-minute tenant rule may proceed.
+20-requests-per-minute tenant rule may proceed. Also pause for ambiguous
+product intent, difficult recovery, weakened validation, security,
+compatibility, or insufficient authority.
 
 ## Preserve Intent Through Decomposition
 
@@ -89,8 +91,9 @@ then move the plan to `docs/plans/completed/`.
 Use the consumer-owned runbook. Verify prerequisites and ownership, start only
 an isolated instance, prove readiness, create known state, reproduce and
 validate through the real interface, inspect correlated runtime evidence, and
-stop only resources this run owns. If no verified runbook exists, do not invent
-commands, credentials, product policy, or cleanup obligations.
+stop only resources this run owns. If no verified runbook exists, inspect
+current authority and report the missing guidance; do not invent commands,
+credentials, product policy, or cleanup obligations.
 
 ### Improve The Harness
 
