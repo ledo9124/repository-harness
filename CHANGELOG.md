@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-09-29 - PR #11
+
+- fix(installer): replace an existing Windows executable without a backup path (@ledo9124)
+- Merge commit: `b8e8bc8887b66a0b3b897a153769000ad5bc0fab`
+- Harness core candidate: `harness-v0.1.15` (publication requires platform proof)
+- Changed files: 2 total
+  - `scripts/install-harness.ps1`
+  - `tests/installer/test-install-harness-modes.ps1`
+
 ## 2026-09-29 - PR #10
 
 - feat(skills): end evidence capsule v1 and final-message capsules (@ledo9124)
