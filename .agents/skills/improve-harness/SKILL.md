@@ -50,6 +50,8 @@ exposed it:
   the invariant.
 - **Authority:** permission, approval, audit, or recovery was unclear.
 - **Proof:** checks established a proxy rather than the accepted outcome.
+- **Decision flow:** a working choice hardened into a constraint, invalidating
+  evidence did not reach dependent work, or mutation ownership was unclear.
 - **Environment:** an external prerequisite was unavailable.
 
 Assign the correction to `repository-harness`, the consumer repository, the
@@ -69,8 +71,10 @@ Maintenance owner and removal condition:
 
 Make only the authorized intervention. Prefer an existing owner, a clearer
 route, an actionable diagnostic, a runbook fact, a type or API, or
-claim-matched proof over a parallel framework. Keep unknown policy unknown.
-Run repository-native checks that protect the changed boundary.
+claim-matched proof over a parallel framework. Removing stale guidance or
+unnecessary ceremony is a valid intervention when it fixes the earliest gap
+without weakening proof. Keep unknown policy unknown. Run repository-native
+checks that protect the changed boundary.
 
 ## 4. Require A Fresh Rerun
 
