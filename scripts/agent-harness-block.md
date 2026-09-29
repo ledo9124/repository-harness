@@ -12,9 +12,9 @@ validation material.
 - Use one `docs/plans/active/` file when work spans sessions, coordinates
   contributors, has dependencies, or needs recovery. Move it to
   `docs/plans/completed/` only after validation.
-- Before editing, identify repository authority for each new externally
+- Before edits, identify repository authority for each new externally
   observable policy. If materially different choices remain open, stop before
-  edits; configurable defaults are not authority.
+  edits; plans and configurable defaults are not authority.
 - For architecture, reliability, security, or quality invariant work, read
   `docs/patterns/encoding-invariants.md` and enforce only accepted rules.
 - Report reusable agent friction. Change guidance, tools, runbooks, or validation
