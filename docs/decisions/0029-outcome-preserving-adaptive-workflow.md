@@ -48,8 +48,7 @@ mutation owner per overlapping scope.
 
 Material evidence may reopen a working decision when it affects the accepted
 outcome, a hard constraint, correctness, an interface contract, security,
-compatibility, reliability, or a measured performance target. Preference for a
-cleaner or more general design alone is insufficient.
+compatibility, reliability, or a measured performance target. Preference for a cleaner or more general design alone is insufficient.
 
 When a premise is invalidated, the durable plan or lasting decision records the
 evidence, revision, affected scopes, and propagation. Dependent work re-checks
