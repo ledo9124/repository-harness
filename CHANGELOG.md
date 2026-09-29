@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-09-29 - PR #12
+
+- fix(core): make installed bytes independent of line endings (@ledo9124)
+- Merge commit: `69686ae72e57202d00125e9ca89d5b353350649f`
+- Harness core candidate: `harness-v0.1.16` (publication requires platform proof)
+- Changed files: 11 total
+  - `.gitattributes`
+  - `.github/workflows/harness-release.yml`
+  - `.github/workflows/premerge.yml`
+  - `crates/harness/src/application/service.rs`
+  - `crates/harness/src/domain/model.rs`
+  - `crates/harness/src/infrastructure/embedded_distribution.rs`
+  - `crates/harness/src/infrastructure/filesystem_state.rs`
+  - `docs/ARCHITECTURE.md`
+  - `docs/decisions/0031-line-ending-independent-core-bytes.md`
+  - `docs/decisions/README.md`
+  - `tests/docs/test-doc-contracts.sh`
+
 ## 2026-09-29 - PR #11
 
 - fix(installer): replace an existing Windows executable without a backup path (@ledo9124)
