@@ -108,8 +108,11 @@ the plan back some authority, or the result is noise at five runs.
 
 ## Decision
 
-**Remove**, under the fixed rule: C reached 3/5, below 4/5. The intervention
-stays unmerged on `feature/plan-authority-v2`, commit `1585825`.
+**Remove**, under the fixed rule: C reached 3/5, below 4/5.
+
+On 2026-09-29 the human overrode this to **Keep** the v2 wording. They accepted
+fewer silent outcome violations (A 2/5 to 5/5, C 1/5 to 3/5) in exchange for
+some extra escalation (D 4/5 to 3/5). See decision 0029.
 
 ## Result
 

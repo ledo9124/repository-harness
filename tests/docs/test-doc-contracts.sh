@@ -39,6 +39,7 @@ current_files=(
   docs/decisions/0026-explicit-onboarding-skills-in-default-core.md
   docs/decisions/0027-end-protocol-v1-and-focus-repository-protocol.md
   docs/decisions/0028-authoritative-invariant-encoding.md
+  docs/decisions/0029-plans-are-not-authority.md
   docs/research/application-legibility.md
   .github/ISSUE_TEMPLATE/real-world-example.md
 )

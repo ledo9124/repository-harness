@@ -24,6 +24,7 @@ required_agent_text=(
   'docs/plans/active/'
   'identify repository authority for each new externally'
   'configurable defaults are not authority'
+  'Plans are not authority'
   'docs/patterns/encoding-invariants.md'
   'explicitly asked to use `$improve-harness`'
   'product intent remains ambiguous'
