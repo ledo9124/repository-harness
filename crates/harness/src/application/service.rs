@@ -5,11 +5,10 @@ use crate::application::{
     CoreDistributionPort, InstallationStatePort, PortError, ThreeWayMergePort,
 };
 use crate::domain::{
-    normalize_line_endings, same_text, BaselineFile, ConflictReason, CoreDistribution,
-    DoctorCheck, DoctorReport, FileChangeKind, FileStatus, FrozenWorkspaceFile, InstallReport,
-    InstallationCondition, InstallationState, MergeOutcome, PlannedFileChange,
-    ResolutionConflict, StatusReport, UpdateConflict, UpdateReport, UpdateResolutionSession,
-    WorkspaceMutation,
+    normalize_line_endings, same_text, BaselineFile, ConflictReason, CoreDistribution, DoctorCheck,
+    DoctorReport, FileChangeKind, FileStatus, FrozenWorkspaceFile, InstallReport,
+    InstallationCondition, InstallationState, MergeOutcome, PlannedFileChange, ResolutionConflict,
+    StatusReport, UpdateConflict, UpdateReport, UpdateResolutionSession, WorkspaceMutation,
 };
 
 pub struct CoreApplication<D, S, M> {
