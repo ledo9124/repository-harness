@@ -420,10 +420,16 @@ over-challenge 0/5 (the registered O class needs a failing check).
 - Focused proof: reference-edit table above.
 - Integration or end-to-end proof: per-run `check.py` output retained in
   each run directory as `check.out`.
-- Repository-required checks: `tests/docs/test-doc-contracts.sh` could not
-  run here (`rg` is not installed in this shell; it reports a spurious
-  AGENTS.md failure). `scripts/validate-premerge.sh` was not run: it needs
-  `cargo` and `rg`, and the change adds only documentation. Run it in CI.
+- Repository-required checks, attempted 2026-10-01 with `cargo` and a
+  borrowed `rg.exe` on PATH (nothing installed or committed):
+  `tests/docs/test-doc-contracts.sh` fails before checking the docs with
+  "Unsupported Harness CLI platform: MINGW64_NT" (the Harness CLI does not
+  support Git Bash on Windows), and `scripts/validate-premerge.sh` stops at
+  `cargo fmt` because the `rustfmt` component is not installed for the
+  `stable-x86_64-pc-windows-msvc` toolchain. So no repository validation
+  script passed here. Missing: the docs contract test (needs a supported
+  platform) and the premerge script (needs `rustup component add rustfmt`).
+  The change adds documentation only; run both in CI or on a supported host.
 
 ## Result
 
