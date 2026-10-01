@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-01 - PR #13
+
+- feat(skills): add delegation heuristics and record product-outcomes experiment (@ledo9124)
+- Merge commit: `14e298ea5fe16dd9d3dd5c2c72ec680e2e73d152`
+- Harness core release: not required
+- Changed files: 4 total
+  - `.agents/skills/engineering-wisdom/references/heuristics.md`
+  - `.agents/skills/engineering-wisdom/references/sources.md`
+  - `docs/plans/completed/harness-improvement-product-outcomes.md`
+  - `tests/installer/test-engineering-wisdom-opt-in.sh`
+
 ## 2026-09-29 - PR #12
 
 - fix(core): make installed bytes independent of line endings (@ledo9124)
