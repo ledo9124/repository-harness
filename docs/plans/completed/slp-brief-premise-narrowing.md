@@ -398,8 +398,6 @@ over-challenge 0/5 (the registered O class needs a failing check).
 - [x] D3: human chose the strict reading; amendment above.
 - [x] N-B, K-A, K-B (15 runs), access-scanned.
 - [x] Record results, verdict, limitations; move to `completed/`.
-- [ ] If reproduced: N-B, K-A, K-B.
-- [ ] Record results, verdict, limitations; move this plan to `completed/`.
 
 ## Decisions
 
