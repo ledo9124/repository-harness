@@ -1,7 +1,8 @@
 # Sources
 
 This pack paraphrases recurring ideas from Robert C. Martin's broader
-engineering work. It does not reproduce source prose, and the sources are
+engineering work and from published practitioner writing on delegating work to
+coding agents. It does not reproduce source prose, and the sources are
 inspiration rather than repository authority.
 
 - Robert C. Martin, *Agile Software Development: Principles, Patterns, and
@@ -15,6 +16,13 @@ inspiration rather than repository authority.
   dependency direction, and architectural trade-offs.
 - Robert C. Martin, *Clean Agile* (2019): feedback, tests, refactoring, and
   disciplined incremental delivery.
+- Vũ Hà Lâm, "Bàn về multi-agent orchestration và mô hình SLP" (2026),
+  <https://vhlam.com/article/agent-orchestration-multi-agent-slp>: earlier
+  solutions hardening into later constraints, accumulating workarounds, state
+  with different lifetimes, and comparable measurement conditions.
+- Vũ Hà Lâm, "10 Anti Pattern kinh điển khi làm việc với Coding Agent" (2026),
+  <https://vhlam.com/article/coding-agent-anti-pattern>: avoidable intermediate
+  phases and plans that prescribe implementation instead of contracts.
 
 Use repository evidence and current domain constraints to decide whether any
 paraphrased heuristic applies.

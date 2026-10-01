@@ -56,6 +56,16 @@ grep -Fq 'Make automation failure honest' \
   "$opt_in_target/.agents/skills/engineering-wisdom/references/heuristics.md"
 grep -Fq 'Bound cumulative state at its consumption boundary' \
   "$opt_in_target/.agents/skills/engineering-wisdom/references/heuristics.md"
+grep -Fq 'Compare measurements under equivalent conditions' \
+  "$opt_in_target/.agents/skills/engineering-wisdom/references/heuristics.md"
+grep -Fq 'Give state with different obligations separate lifetimes' \
+  "$opt_in_target/.agents/skills/engineering-wisdom/references/heuristics.md"
+grep -Fq 'Lock contracts and leave internal structure to the implementer' \
+  "$opt_in_target/.agents/skills/engineering-wisdom/references/heuristics.md"
+grep -Fq 'Go directly to the end state unless a real dependency needs a step' \
+  "$opt_in_target/.agents/skills/engineering-wisdom/references/heuristics.md"
+grep -Fq 'Reexamine the originating choice when workarounds accumulate' \
+  "$opt_in_target/.agents/skills/engineering-wisdom/references/heuristics.md"
 
 # A later normal merge is non-activation, not removal.
 before=$(shasum -a 256 \

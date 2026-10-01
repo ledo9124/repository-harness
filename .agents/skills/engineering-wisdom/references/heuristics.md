@@ -76,6 +76,21 @@ repository. Each entry includes counter-pressure and a way to test the advice.
 - Verify by introducing a representative logic defect and a representative
   integration defect; the appropriate test should fail for each.
 
+### Compare measurements under equivalent conditions
+
+- Helps when a before/after number supports a performance or reliability claim
+  and the revision, machine, build profile, concurrent load, or workload may
+  differ between runs.
+- Can hurt when insisting on laboratory conditions blocks a decision that a
+  rough, clearly labeled measurement can settle.
+- Example: a benchmark taken while another process compiles, or after the
+  workload changed between runs, yields real numbers that do not support the
+  comparison. A report that a shared resource is now idle is not evidence that
+  it is.
+- Verify by recording revision, machine, build profile, workload, and observed
+  concurrent load for each run, checking that state directly before measuring,
+  and repeating runs enough to see the noise.
+
 ### Keep doubles at owned seams
 
 - Helps when a slow or nondeterministic external dependency prevents fast,
@@ -170,6 +185,22 @@ repository. Each entry includes counter-pressure and a way to test the advice.
   each event is handled as required, and asserts retained state reaches a
   stable bound.
 
+### Give state with different obligations separate lifetimes
+
+- Helps when one structure serves several purposes, so reclaiming it for one
+  purpose silently drops another obligation it was also carrying.
+- Can hurt when the purposes genuinely share one lifetime; splitting them then
+  duplicates bookkeeping and invites drift between the copies.
+- Example: a sender prunes a bounded history of sent messages, but that history
+  is also its only record of updates the receiver has not yet confirmed. After
+  pruning, the sender believes nothing is outstanding while the receiver stays
+  wrong. Keep pending-confirmation state until an acknowledgement covers it,
+  independent of message retention. Enlarging the history only delays the
+  failure.
+- Verify with tests that force the reclaim path (pruning, reset, reconnect)
+  while the other obligation is still outstanding, then assert that the
+  obligation is still met.
+
 ## Refactoring
 
 ### Separate behavior-preserving restructuring from feature change
@@ -215,6 +246,54 @@ repository. Each entry includes counter-pressure and a way to test the advice.
   requirements appear, not solely because it is a separate noun.
 - Verify with measured change coupling, runtime requirements, and a reversible
   prototype before a large migration.
+
+## Planning And Delegation
+
+### Lock contracts and leave internal structure to the implementer
+
+- Helps when a plan or task brief prescribes files, helpers, and call order, so
+  the implementer transcribes the brief and cannot use a better existing
+  abstraction found while reading the code.
+- Can hurt when the internal shape is itself depended on, such as a public
+  extension point, a wire format, or a module other owners import; lock that
+  shape explicitly.
+- Example: a brief fixes what an API promises, valid inputs and outputs, who
+  owns the state, how errors are represented, and which tests prove them. It
+  leaves helper names, function boundaries, and reuse of existing modules to
+  the implementer.
+- Verify by naming, for each locked item, the component, consumer, or test that
+  depends on it; an item nothing depends on is a candidate to unlock.
+
+### Go directly to the end state unless a real dependency needs a step
+
+- Helps when a plan splits one change into steps that each leave a half-old,
+  half-new system, with adapters, dual paths, or shims that exist only so each
+  step can pass on its own. Such transitional code tends to outlive the plan.
+- Can hurt when production imposes a real intermediate state: mixed-version
+  deployment, a migration that cannot run atomically, a compatibility window,
+  or an unverified assumption a small step can test first.
+- Example: replacing one store abstraction with another inside a single
+  codebase usually moves every consumer in one coherent change. A staged
+  migration is justified when old readers must keep working against new data.
+- Verify by asking of each step what would go wrong if it were skipped. For
+  transitional code that remains, record why it exists and its removal
+  condition, and confirm at completion that it was removed or kept by an
+  explicit decision.
+
+### Reexamine the originating choice when workarounds accumulate
+
+- Helps when successive fixes add mappings, intermediate states, sync layers,
+  or larger limits to compensate for the same underlying mismatch, and none of
+  them is allowed to question the choice that created it.
+- Can hurt when that choice is settled by accepted authority, or when one
+  contained fix is cheaper than any redesign. A proposed redesign must also
+  show what it removes and what it adds.
+- Example: a stale-cache defect is patched with a shorter expiry, then a
+  background refresher, then a version map, while the cause is a write path
+  that bypasses the cache owner.
+- Verify by tracing the recent fixes in one area to their causes. If they share
+  one premise, test that premise directly, and route any change to it through
+  repository authority instead of replacing it silently.
 
 ## Professional Practice
 
