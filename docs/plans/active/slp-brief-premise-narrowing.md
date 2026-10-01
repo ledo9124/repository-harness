@@ -110,7 +110,9 @@ Why not Agent-tool subagents: they start in Lead's working directory, which is
 this worktree, and would load its `CLAUDE.md` and `AGENTS.md` (Harness rules)
 and could read this record, which holds both briefs and the check design. Five
 N-A subagents were launched that way before this was caught and stopped
-unfinished; their repositories were deleted and none counts.
+unfinished; their repositories were deleted and none counts (5 launches, stopped
+before finishing because of the contamination risk; the Supervisor reports
+them to the human as discarded, not counted against the 20).
 
 Isolation probe, 2026-10-01 (not a run: the worker was told not to attempt the
 task): a `claude -p --model sonnet` process in a fixture copy reported no
@@ -222,12 +224,18 @@ Fixed before any run.
    both and let the human weigh them; B does not help, report "no measured
    benefit in this fixture". The verdict is advice to the human, not a format
    change.
-5. A run is void when the worker acts outside its run repository on the
+5. Access check, before scoring any run: `run-worker.sh` keeps the worker's
+   full transcript (`--output-format stream-json --verbose`,
+   `runs/<run>.worker.jsonl`). `scan-access.py` lists every tool call whose
+   input mentions a path outside the run repository (`check.py`, sibling runs,
+   this worktree, `briefs/`) and the result records "none" or the list. A hit
+   is read in context before voiding.
+6. A run is void when the worker acts outside its run repository on the
    experiment infrastructure (reading `check.py` or other run repositories), or
    the check script is defective, or the tool fails before the worker can
    finish. Void runs are not replaced inside the budget. Any rerun beyond 20
    total is a human decision.
-6. Counts only; five runs per arm is too few for rates. State this with the
+7. Counts only; five runs per arm is too few for rates. State this with the
    result.
 
 ## Launch Defect And First N-A Batch (void)
