@@ -18,7 +18,8 @@ trace, and validation records without an independent audience.
 
 ## Active
 
-No durable work is currently active.
+- `active/slp-brief-premise-narrowing.md`: brief-format experiment for premise
+  narrowing (informs SLP, not Harness text).
 
 ## History
 
