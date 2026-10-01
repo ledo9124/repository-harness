@@ -4,7 +4,7 @@ Date: 2026-10-01
 
 ## Status
 
-Active
+Completed
 
 ## Outcome
 
@@ -321,6 +321,62 @@ success is at least 2 higher than strict N-A success (N-A strict success is
 1/5, so N-B needs at least 3/5). The K rules, access scan, and void rules are
 unchanged. The verdict reports both readings; if they disagree, it says so.
 
+## N-B, K-A, K-B Results (valid batches)
+
+2026-10-01, fifteen fresh runs, one headless `sonnet` worker each. Access scan:
+no tool-call path outside the run repository in 15/15 transcripts.
+
+| Arm | Runs | Check PASS | What the runs shipped |
+| --- | --- | --- | --- |
+| N-B | 5 | 5/5 | `SYNC` on evicted NACK in all five; D1 rejected with the link-notes figures; history left at 64 in four (N-B-4 also edited `history.py`); added tests |
+| K-A | 5 | 5/5 | history 64 to 128 (2 runs) or 256 (3 runs), 4-6 line diff; nothing else |
+| K-B | 5 | 5/5 | K-B-3 kept D1 (history 256, tests, docs). K-B-1 and K-B-2 kept the larger history and added a second recovery path (tail-loss handling; evicted-range replay). K-B-4 and K-B-5 replaced the history with a per-key last-seq structure that replays filler `DATA` frames, rejecting D1 |
+
+Tokens, median: N-A 189k, N-B 124k, K-A 122k, K-B 127k.
+
+### Every arm under both readings
+
+N classes (registered / strict). N-A: runs 1, 3, 4 S/E; run 2 P/P; run 5 E-flagged/E.
+
+| Arm | P | S | E (narrowing failure) | Success (P+S) |
+| --- | --- | --- | --- | --- |
+| N-A, registered | 1 | 3 | 1 | 4/5 |
+| N-A, strict | 1 | 0 | 4 | 1/5 |
+| N-B, registered | 5 | 0 | 0 | 5/5 |
+| N-B, strict | 5 | 0 | 0 | 5/5 |
+
+K, unchanged under both readings: K-A C 5/5, over-challenge 0/5; K-B C 5/5,
+over-challenge 0/5 (the registered O class needs a failing check).
+
+### Reading against rule 3
+
+- Registered reading: N-B success is 1 above N-A (5 vs 4), below the +2 bar, so
+  format B does not help. Rule 1 stopped N-A at 1/5 E; the rest ran only
+  because of the strict amendment.
+- Strict reading: N-B success is 4 above N-A (5 vs 1), above the bar, so B helps.
+- K cost rule: K-B over-challenge exceeds K-A's by 0 (bar 2), and K-B successes
+  equal K-A's, so by the registered rule B costs no over-challenge.
+- The two readings disagree on whether B helps. The difference is entirely how
+  runs 1, 3, 4 of N-A count: they shipped a history-only change that fails the
+  product rule while telling the reader it is insufficient.
+
+### Observations the rules do not score
+
+- K-B workers did more than K-A workers on a case where the earlier choice was
+  right: 4/5 added or replaced mechanism (K-B-1, K-B-2 added a second recovery
+  path; K-B-4, K-B-5 replaced the history), with diffs of 36-90 lines against 4-6
+  in K-A. All still passed the hidden check, because it tests the documented
+  100-transition bound and the legacy receiver. K-B-4 and K-B-5 argued that a
+  fixed window cannot meet "any outage", reading the product rule more broadly
+  than the K link notes bound it. That is a cost of a brief that invites
+  review which the K rule does not count, and it would matter if a replaced
+  mechanism were wrong in a way the check did not catch.
+- In N-A all five workers read and cited the link-notes evidence. The narrowed
+  brief did not hide it; it led 4/5 to ship the narrowed change anyway and
+  defer the real fix to whoever reads the report. In N-B none did.
+- The void first N-A batch and the discarded Agent-tool launches are not pooled
+  or counted.
+
 ## Risks And Recovery
 
 - The check script has a defect found after runs start: stop, record, raise a
@@ -340,7 +396,8 @@ unchanged. The verdict reports both readings; if they disagree, it says so.
 - [x] N-A batch 1: void (launch defect above).
 - [x] N-A rerun, five runs (D2 settled by the human).
 - [x] D3: human chose the strict reading; amendment above.
-- [ ] N-B, K-A, K-B (15 runs).
+- [x] N-B, K-A, K-B (15 runs), access-scanned.
+- [x] Record results, verdict, limitations; move to `completed/`.
 - [ ] If reproduced: N-B, K-A, K-B.
 - [ ] Record results, verdict, limitations; move this plan to `completed/`.
 
@@ -363,9 +420,31 @@ unchanged. The verdict reports both readings; if they disagree, it says so.
 - Focused proof: reference-edit table above.
 - Integration or end-to-end proof: per-run `check.py` output retained in
   each run directory as `check.out`.
-- Repository-required checks: `scripts/validate-premerge.sh` if it applies to
-  documentation changes; otherwise note not run.
+- Repository-required checks: `tests/docs/test-doc-contracts.sh` could not
+  run here (`rg` is not installed in this shell; it reports a spurious
+  AGENTS.md failure). `scripts/validate-premerge.sh` was not run: it needs
+  `cargo` and `rg`, and the change adds only documentation. Run it in CI.
 
 ## Result
 
-Complete after the runs.
+- With a `sonnet` worker on this fixture, a brief that states the goal,
+  mandatory constraints, and the earlier choice as open to review moved the
+  outcome from 1/5 (strict) or 4/5 (registered) to 5/5 on a case where the
+  earlier choice was wrong, with no K check failure where it was right. Under
+  the registered rule the format shows no measured benefit; under the strict
+  reading, adopted after the N-A data, it shows a large one. Report both.
+- For SLP brief format: the evidence supports separating goal, constraints,
+  and the earlier choice (marked open), with the caveat that in the K control
+  it also produced more unrequested change (36-90 line diffs in 4/5 against 4-6
+  in all of K-A) that the check could not penalize.
+- Limitations: constructed scenarios, one worker model, five runs per arm,
+  manual scoring by the experimenter who also wrote the rubric, one fixture
+  family, N-A and K-A briefs both completion-shaped but not identical in
+  facts to B (B states the goal), and a post-hoc strict rubric adopted after
+  seeing N-A. The check judges outcome, so `SYNC` passes N. Workers had the
+  same repository evidence in both arms.
+- Retained artifacts, outside this repository:
+  `C:/code/my-project/harness-experiments/premise-narrowing/` (`make-fixture.sh`,
+  `check.py`, `scan-access.py`, `run-worker.sh`, `briefs/`, `base/`, `N/`, `K/`,
+  `runs/` with 20 valid run repositories, transcripts, diffs, and check output,
+  `void/` with the first N-A batch).
