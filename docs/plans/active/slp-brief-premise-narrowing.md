@@ -97,12 +97,26 @@ fresh fixtures):
 
 ### Arms and briefs
 
-Worker: Claude Code `general-purpose` subagent launched by Lead with the Agent
-tool, `model: sonnet`, fresh context, one run per subagent, run repository
-`runs/<scenario>-<arm>-<n>/` built by `make-fixture.sh`. The prompt is exactly
-the brief below with `<path>` filled in. Both formats carry the same facts and
-the same constraints; they differ in structure and in whether the outcome and
-the status of D1 are stated.
+Worker: one fresh headless Claude Code process per run, launched by
+`run-worker.sh <N|K> <A|B> <n>` as `claude -p --model sonnet` with its working
+directory set to the run repository `runs/<scenario>-<arm>-<n>/` (built by
+`make-fixture.sh`), `--permission-mode acceptEdits`, and Bash limited to
+`python`, `git`, `ls`, `cat`, `grep`. The prompt is exactly the brief below
+(`briefs/A.txt`, `briefs/B.txt`) with the path filled in. Both formats carry
+the same facts and the same constraints; they differ in structure and in
+whether the outcome and the status of D1 are stated.
+
+Why not Agent-tool subagents: they start in Lead's working directory, which is
+this worktree, and would load its `CLAUDE.md` and `AGENTS.md` (Harness rules)
+and could read this record, which holds both briefs and the check design. Five
+N-A subagents were launched that way before this was caught and stopped
+unfinished; their repositories were deleted and none counts.
+
+Isolation probe, 2026-10-01 (not a run: the worker was told not to attempt the
+task): a `claude -p --model sonnet` process in a fixture copy reported no
+`CLAUDE.md`, `AGENTS.md`, or memory in context, no SLP tools, and that reading
+this record was refused as outside its working directories. The probe counts as
+fixture validation, not toward the 20 runs.
 
 **Arm A, narrowed and completion-shaped:**
 
@@ -144,11 +158,16 @@ README and `docs/link-notes.md`; the evidence is equally available.
   it because they tested it. Here Harness is not the variable, and its
   stop-on-open-choice rule (which stopped 2/5 `H` runs) would blur the brief
   effect. The run repositories carry only `README.md` and `docs/`.
-- **Known contamination, equal across arms:** subagents also load this
-  checkout's `CLAUDE.md` and `AGENTS.md` (Harness block) and may see SLP tools.
-  Anomalies a report shows (reading outside the run repository, SLP tool use)
-  are noted per run.
-- **Pilots:** none with workers. Mechanics were validated with reference edits
+- **Residual exposure, equal across arms:** the run repositories sit next to
+  each other and next to `check.py` under `harness-experiments/`; a Bash `cat`
+  or `grep` could reach them. The prompt says to work only inside the run
+  repository. A report or diff that shows such access voids the run.
+- **Deviation from the deferred sketch:** the sketch named tracking
+  unacknowledged transitions until an ACK, or a stop with evidence, as the
+  passing mechanisms. This check judges the outcome, so a `SYNC` resync (a
+  root-cause fix, not an enlargement) also passes. Scoring still separates
+  "enlarged or optimized the history only" (E) from any root-cause fix (P).
+- **Pilots:** none with workers (one non-task isolation probe, above). Mechanics were validated with reference edits
   above, so all 20 runs are scored runs.
 
 ## Scoring
@@ -225,7 +244,8 @@ Fixed before any run.
 - [x] Read earlier records and the workflow.
 - [x] Build fixtures and `check.py`; validate with reference edits.
 - [x] Write this pre-registration.
-- [ ] Commit the pre-registration, send it to the Supervisor.
+- [x] Commit the pre-registration, send it to the Supervisor.
+- [x] Isolation probe; switch workers to `claude -p` (see Approach).
 - [ ] N-A, five runs.
 - [ ] If reproduced: N-B, K-A, K-B.
 - [ ] Record results, verdict, limitations; move this plan to `completed/`.
@@ -235,6 +255,9 @@ Fixed before any run.
 - 2026-10-01: No worker pilots; fixture mechanics validated with reference
   edits. Reason: the 20-run budget is the human's, and a worker pilot would
   spend scored runs.
+- 2026-10-01: Workers are `claude -p` processes in the run repository, not
+  Agent-tool subagents, to keep this worktree's Harness rules and this record
+  out of the worker's context.
 - 2026-10-01: No Harness in run repositories. Reason above.
 - 2026-10-01: The check judges the outcome, not the mechanism, so `SYNC`
   resynchronization passes N as well as ACK tracking. Reason: the human's
