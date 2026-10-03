@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-03 - PR #14
+
+- docs(workflow): state when to make a durable plan once, in WORKFLOW.md (@ledo9124)
+- Merge commit: `698cbd73886bc54e89584d1bf124b7bc61dfe6a9`
+- Harness core candidate: `harness-v0.1.17` (publication requires platform proof)
+- Changed files: 5 total
+  - `AGENTS.md`
+  - `crates/harness/assets/docs/plans/README.md`
+  - `docs/WORKFLOW.md`
+  - `docs/plans/README.md`
+  - `scripts/agent-harness-block.md`
+
 ## 2026-10-01 - PR #13
 
 - feat(skills): add delegation heuristics and record product-outcomes experiment (@ledo9124)
