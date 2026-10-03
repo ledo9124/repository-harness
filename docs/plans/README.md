@@ -3,8 +3,8 @@
 Plans are Git-native working memory for complex tasks.
 
 Use an ephemeral plan for bounded, single-session work. Create one file under
-`active/` when work spans sessions, coordinates contributors, has meaningful
-dependencies, needs recovery, or cannot safely resume from its diff.
+`active/` when `../WORKFLOW.md` ("Does The Work Need Durable Memory?") calls
+for one.
 
 ```text
 docs/plans/active/<slug>.md
