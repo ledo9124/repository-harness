@@ -14,6 +14,9 @@ task narratives.
   preservation boundary, validation evidence, and recovery path.
 - `p1-encode-invariants.md`: the P1 invariant-encoding workflow delivered to the
   installed core, with source, embedded, and installed inventories.
+- `docs-truth.md`: docs hold what code cannot; consumer-only installed maps,
+  decision 0032 and its path check, one install list, and the measured effect
+  of the change on existing consumers.
 
 ## Harness-Improvement Experiments
 

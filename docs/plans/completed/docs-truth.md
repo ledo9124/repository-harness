@@ -4,7 +4,7 @@ Date: 2026-10-07
 
 ## Status
 
-Active.
+Completed.
 
 ## Outcome
 
@@ -126,9 +126,12 @@ Order, so each step is verifiable alone:
 ## Progress
 
 - [x] Human's choices C1-C5 (SLP ledger D20)
-- [ ] Item 6, item 3 (no consumer effect)
-- [ ] Items 1, 2, 4, 5
-- [ ] `scripts/validate-premerge.sh`; release per C5
+- [x] Item 6, item 3 (no consumer effect): `c6b3c97`; the 24 embedded files
+  were byte-identical before and after
+- [x] Items 1, 2, 4, 5: `3a76abd`; decision 0032; the installed map's skills
+  line corrected after review
+- [x] `scripts/validate-premerge.sh` (exit 0, WSL Ubuntu 24.04, fresh clone);
+  independent review; release per C5
 
 ## Decisions
 
@@ -140,11 +143,41 @@ Order, so each step is verifiable alone:
   duplicates; C5 "Merge, push, tag, phát hành": release a new core version
   through the repository's release workflow, with consumer effects in the
   release notes. Full pre-merge validation first.
+- 2026-10-07 (engineering): the authority-contract test pins seven authority
+  entries and reads the rest from the manifest, so the list is declared once;
+  a path dropped from the manifest still shows in the install-mode and link
+  tests and in the release classifier.
+- 2026-10-07 (engineering): the path check flags a named path only when it
+  exists in the upstream tree and is neither installed nor consumer-owned;
+  illustrative paths pass. Decision 0032 states this.
 
 ## Validation
 
-- Focused: installer mode tests, payload hash before and after item 3, the
-  new path check with a negative fixture, index checks.
-- Repository: `scripts/validate-premerge.sh`.
+- Focused: installer mode tests (a consumer-like tree without the manifest is
+  not taken as a source checkout); payload hash list before and after item 3
+  (identical); the path check passes the real install and fails fixtures and
+  the restored old `docs/README.md`; index checks fail all four directions on
+  fixtures.
+- Repository: `scripts/validate-premerge.sh` exit 0 from a fresh clone (WSL);
+  the Windows build and `test-install-harness-modes.ps1` pass.
+- Review (fresh agent): the release build with `build.rs` on a full checkout,
+  the classifier flags this change as a core release, and a main-to-branch
+  update changes only the two installed READMEs.
 
 ## Result
+
+The repository now keeps documentation for what code cannot establish, and
+installed docs no longer point at upstream-only material.
+
+Consumer effect of the next core release (measured by updating a main
+install with the branch binary):
+- Only `docs/README.md` and `docs/product/README.md` change; the installed
+  path set (25) and every other installed file are unchanged.
+- Unedited copies are replaced cleanly.
+- An edited `docs/README.md` usually conflicts, because the new file is a near
+  rewrite: `harness update` exits 2, stages a resolution session, and leaves
+  the workspace unchanged until it is resolved; `harness update --abort`
+  restores the tree. Small edits to `docs/product/README.md` merge.
+
+Not covered: plain prose and non-Markdown installed files are outside the
+path check's scope (decision 0032).

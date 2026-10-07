@@ -14,8 +14,9 @@ Start with the smallest authoritative surface.
 - `plans/`: one durable working-memory document for work that needs it.
 - `decisions/` and `product/`: generic structure for this repository's own
   choices and product documents; both start empty of content.
-- `.agents/skills/` (repository root): explicit-only onboarding,
-  proposal-audit, invariant, and Harness-improvement skills.
+- `.agents/skills/` (repository root): an invariant-encoding skill that
+  responds to matching requests, and explicit-only onboarding,
+  proposal-audit, and Harness-improvement skills.
 
 ## Owned By This Repository
 
