@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-10-07 - PR #15
+
+- docs: keep docs for what code cannot establish; consumer-only installed maps (decision 0032) (@ledo9124)
+- Merge commit: `64941e5a7377a530a3981e154c64f991c7373264`
+- Harness core candidate: `harness-v0.1.18` (publication requires platform proof)
+- Changed files: 30 total (first 20 shown)
+  - `CONTRIBUTING.md`
+  - `README.md`
+  - `crates/harness/assets/docs/README.md`
+  - `crates/harness/assets/docs/product/README.md`
+  - `crates/harness/build.rs`
+  - `crates/harness/src/infrastructure/embedded_distribution.rs`
+  - `docs/ARCHITECTURE.md`
+  - `docs/HARNESS.md`
+  - `docs/README.md`
+  - `docs/decisions/0032-installed-docs-name-only-installed-paths.md`
+  - `docs/decisions/README.md`
+  - `docs/demo/README.md`
+  - `docs/plans/completed/README.md`
+  - `docs/plans/completed/docs-truth.md`
+  - `docs/product/installation-profiles.md`
+  - `scripts/README.md`
+  - `scripts/harness-install-files.txt`
+  - `scripts/harness-release-changed.sh`
+  - `scripts/install-harness.ps1`
+  - `scripts/install-harness.sh`
+  - _… 10 additional file(s) omitted from this entry._
+
 ## 2026-10-03 - PR #14
 
 - docs(workflow): state when to make a durable plan once, in WORKFLOW.md (@ledo9124)
