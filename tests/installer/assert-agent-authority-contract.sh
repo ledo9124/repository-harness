@@ -59,34 +59,26 @@ done
 [[ "$(grep -Fc '@AGENTS.md' "$claude_block")" == 1 ]]
 ! grep -Fq 'query matrix' "$claude_block"
 
-payloads=(
+# The installed list is declared once, in the manifest: every entry's
+# destination and source must exist, and the entries this contract rests on
+# must stay declared.
+manifest="$root/scripts/harness-install-files.txt"
+while read -r destination _ source; do
+  source="${source:-$destination}"
+  source="${source#compose:}"
+  [[ -f "$root/$source" ]] || { echo "manifest source missing for $destination: $source" >&2; exit 1; }
+done < <(sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' "$manifest")
+required_payloads=(
+  AGENTS.md
   .agents/skills/audit-onboarding-proposal/SKILL.md
-  .agents/skills/audit-onboarding-proposal/agents/openai.yaml
-  .agents/skills/audit-onboarding-proposal/scripts/validate_evidence_capsule.py
   .agents/skills/encode-invariant/SKILL.md
-  .agents/skills/encode-invariant/agents/openai.yaml
   .agents/skills/improve-harness/SKILL.md
-  .agents/skills/improve-harness/agents/openai.yaml
   .agents/skills/onboard-repository/SKILL.md
-  .agents/skills/onboard-repository/agents/openai.yaml
-  .agents/skills/onboard-repository/references/evidence-capsule-v2.md
-  .agents/skills/onboard-repository/scripts/emit_evidence_bundle.py
-  .agents/skills/onboard-repository/scripts/render_patch.py
   docs/WORKFLOW.md
-  docs/README.md
   docs/patterns/encoding-invariants.md
-  docs/product/README.md
-  docs/plans/README.md
-  docs/plans/active/README.md
-  docs/plans/completed/README.md
-  docs/decisions/README.md
-  docs/templates/application-runbook.md
-  docs/templates/decision.md
-  docs/templates/exec-plan.md
-  docs/templates/harness-improvement.md
 )
-for payload in "${payloads[@]}"; do
-  grep -Fxq "$payload" "$root/scripts/harness-install-files.txt"
+for payload in "${required_payloads[@]}"; do
+  grep -Eq "^${payload//./\.}([[:space:]]|\$)" "$manifest"
 done
 
 skill_metadata=(

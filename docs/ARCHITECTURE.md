@@ -38,16 +38,10 @@ Architecture tests reject outward dependencies from inner layers.
 
 ## Installation State
 
-Consumer provenance lives under `.harness-core/`:
-
-```text
-.harness-core/
-├── manifest.json
-├── base/
-├── transaction.json          # only while an apply is pending
-├── update/                   # only while conflict resolution is pending
-└── update-candidate/         # retained verified candidate when required
-```
+Consumer provenance lives under `.harness-core/`.
+`crates/harness/src/infrastructure/filesystem_state.rs` owns its layout: the
+manifest and base, plus the transaction, update, and candidate state that exist
+only while an apply or conflict resolution is pending.
 
 The manifest and base contain only Harness-managed core state. They are not a
 task database or product-memory store.

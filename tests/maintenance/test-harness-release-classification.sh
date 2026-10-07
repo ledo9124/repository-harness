@@ -37,7 +37,21 @@ for path in "${positive_paths[@]}"; do
   fi
 done
 
-for unrelated in docs/HARNESS.md README.md docs/research/application-legibility.md; do
+# Every source the manifest declares is a payload path, whatever its destination.
+manifest_sources=$(sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d'   -e 's/^.*<-[[:space:]]*//' -e 's/^compose://' "$root/scripts/harness-install-files.txt")
+[[ -n "$manifest_sources" ]]
+while IFS= read -r path; do
+  if ! printf '%s
+' "$path" | "$classifier"; then
+    echo "manifest source was not classified for release: $path" >&2
+    exit 1
+  fi
+done <<<"$manifest_sources"
+
+# The upstream docs/README.md, docs/plans/README.md, and docs/product/README.md
+# are not the installed ones (their sources are under crates/harness/assets/),
+# and a regex dot must not match any character.
+for unrelated in docs/README.md docs/plans/README.md docs/product/README.md docs/WORKFLOWxmd docs/HARNESS.md README.md docs/research/application-legibility.md; do
   if printf '%s\n' "$unrelated" | "$classifier"; then
     echo "unrelated path triggered Harness core publication: $unrelated" >&2
     exit 1

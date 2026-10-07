@@ -23,6 +23,7 @@ python3 .agents/skills/audit-onboarding-proposal/scripts/validate_evidence_capsu
 
 tests/installer/assert-agent-authority-contract.sh
 tests/installer/assert-install-manifest-links.sh
+tests/installer/assert-installed-docs-paths.sh
 tests/installer/test-install-harness-modes.sh
 tests/installer/test-engineering-wisdom-opt-in.sh
 tests/docs/test-doc-contracts.sh

@@ -126,12 +126,17 @@ mv "$plan" "$fixture/docs/plans/completed/team-time-zones.md"
 assert_no_control_plane_state
 
 # Judgment task: “simplify task permissions” has two product-significant
-# meanings in the canonical demo. Inspection identifies the ambiguity and the
-# application remains untouched while direction is absent.
+# meanings: allow every teammate to edit every task (an access expansion), or
+# keep ownership restrictions but simplify the permission code (a refactor).
+# Inspection identifies the ambiguity and the application remains untouched
+# while direction is absent.
+cat >"$fixture/docs/product/permissions.md" <<'EOF'
+# Task Permissions
+
+Only a task's owner may edit it.
+EOF
 before_judgment=$(shasum -a 256 "$fixture/src/task-status.sh" | awk '{print $1}')
-grep -Fq 'allow every teammate to edit every task' "$root/docs/demo/README.md"
-grep -Fq 'keep ownership restrictions but simplify the permission code' \
-  "$root/docs/demo/README.md"
+grep -Fq "Only a task's owner may edit it." "$fixture/docs/product/permissions.md"
 grep -Fq '`Add rate limiting` without a quota' "$root/docs/WORKFLOW.md"
 grep -Fq 'must stop' "$root/docs/WORKFLOW.md"
 grep -Fq 'configurable defaults are not authority' "$root/AGENTS.md"

@@ -207,6 +207,21 @@ HARNESS_CORE_CLI_PLATFORM=fixture-core \
   "$remote_installer" --directory "$remote" --yes >"$temp/remote.out"
 [[ -x "$remote/scripts/bin/harness" && -f "$remote/.harness-core/manifest.json" ]]
 
+# A consumer-like tree (AGENTS.md, docs/HARNESS.md, a copied installer, no
+# payload manifest) is not a source checkout: the installer stays remote.
+consumer="$temp/consumer-like"
+mkdir -p "$consumer/scripts" "$consumer/docs"
+printf 'consumer agents
+' >"$consumer/AGENTS.md"
+printf 'consumer harness doc
+' >"$consumer/docs/HARNESS.md"
+cp "$installer" "$consumer/scripts/install-harness.sh"
+HARNESS_SOURCE_BASE_URL="file://$root" HARNESS_CORE_SOURCE_BASE_URL="file://$core_source" HARNESS_CORE_CLI_BASE_URL="file://$core_assets" HARNESS_CORE_CLI_PLATFORM=fixture-core   "$consumer/scripts/install-harness.sh" --directory "$temp/consumer-target" --yes   >"$temp/consumer-like.out"
+grep -Fq "Harness source: file://$root" "$temp/consumer-like.out"
+[[ -f "$temp/consumer-target/docs/WORKFLOW.md" ]]
+# The checkout itself, which carries the manifest, is local.
+! grep -Fq 'Harness source: file://' "$temp/fresh.out"
+
 bad_assets="$temp/bad-core-assets"
 mkdir -p "$bad_assets"
 cp "$harness_core_binary" "$bad_assets/harness-fixture-core"

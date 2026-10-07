@@ -23,16 +23,20 @@ seen = set()
 for manifest_name in sys.argv[2:]:
     manifest = pathlib.Path(manifest_name)
     for number, raw in enumerate(manifest.read_text().splitlines(), 1):
-        value = raw.strip()
-        if not value or value.startswith("#"):
+        line = raw.strip()
+        if not line or line.startswith("#"):
             continue
-        if value.startswith("/") or ".." in pathlib.PurePosixPath(value).parts:
-            raise SystemExit(f"unsafe manifest path at {manifest.name}:{number}: {value}")
+        # `destination` or `destination <- [compose:]source`
+        value, _, source = (part.strip() for part in line.partition("<-"))
+        source = (source or value).removeprefix("compose:")
+        for path in (value, source):
+            if path.startswith("/") or ".." in pathlib.PurePosixPath(path).parts:
+                raise SystemExit(f"unsafe manifest path at {manifest.name}:{number}: {path}")
         if value in seen:
             raise SystemExit(f"duplicate payload path: {value}")
         seen.add(value)
-        if not (root / value).is_file():
-            raise SystemExit(f"missing manifest source: {value}")
+        if not (root / source).is_file():
+            raise SystemExit(f"missing manifest source: {source}")
 PY
 
 HARNESS_CORE_BINARY="$root/target/debug/harness" "$root/scripts/install-harness.sh" --directory "$core" --yes >/dev/null
@@ -47,7 +51,7 @@ core, wisdom, core_manifest, wisdom_manifest = map(pathlib.Path, sys.argv[1:])
 
 def entries(path):
     return {
-        line.strip()
+        line.partition("<-")[0].strip()
         for line in path.read_text().splitlines()
         if line.strip() and not line.lstrip().startswith("#")
     }
