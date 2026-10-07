@@ -37,9 +37,3 @@ install or update. They do not contain a database or compatibility profile.
 
 Release commands are called by GitHub workflows. Local development should use
 the pre-merge entrypoint rather than publishing commands.
-
-## Historical CLI
-
-Protocol v1 and `harness-cli` are end-of-life. Their build, schema,
-materialization, snapshot, changeset, release, and bootstrap scripts remain
-available only through historical Git tags.

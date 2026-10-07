@@ -88,9 +88,9 @@ On PowerShell:
 & ([scriptblock]::Create((irm "https://raw.githubusercontent.com/ledo9124/repository-harness/main/scripts/install-harness.ps1"))) -Yes
 ```
 
-Use `--merge` / `-Merge` to preserve existing files and add only missing
-Harness paths. Use `--override` / `-Override` only when replacement is
-intentional. Use `--dry-run` / `-DryRun` to preview.
+`scripts/install-harness.sh --help` lists the options for preserving existing
+files, replacing protected paths, and previewing; the PowerShell bootstrap takes
+the same options. Replace only when replacement is intentional.
 
 The bootstrap downloads a versioned `harness` binary and checksum, verifies
 release identity, and delegates installation to that candidate.

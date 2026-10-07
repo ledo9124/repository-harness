@@ -42,6 +42,7 @@ current_files=(
   docs/decisions/0029-plans-are-not-authority.md
   docs/decisions/0030-end-evidence-capsule-v1.md
   docs/decisions/0031-line-ending-independent-core-bytes.md
+  docs/decisions/0032-installed-docs-name-only-installed-paths.md
   docs/research/application-legibility.md
   .github/ISSUE_TEMPLATE/real-world-example.md
 )
@@ -76,6 +77,64 @@ require docs/research/application-legibility.md 'research, not a release gate'
 require docs/decisions/0027-end-protocol-v1-and-focus-repository-protocol.md '`harness-cli-v0.1.22`'
 require .github/ISSUE_TEMPLATE/real-world-example.md '`docs/WORKFLOW.md`'
 require .github/ISSUE_TEMPLATE/real-world-example.md '`docs/ARCHITECTURE.md`'
+
+# Indexes match their folders: each decision file has a row and each row a
+# file; each completed plan is listed and each listed plan exists.
+decision_index_errors() {
+  local dir=$1 file name number
+  for file in "$dir"/[0-9][0-9][0-9][0-9]-*.md; do
+    [[ -e "$file" ]] || continue
+    name=$(basename "$file")
+    number=${name%%-*}
+    grep -q "^| $number |" "$dir/README.md" ||
+      printf 'decisions index: %s has no row in %s/README.md; add one\n' "$name" "$dir"
+  done
+  while read -r number; do
+    compgen -G "$dir/$number-*.md" >/dev/null ||
+      printf 'decisions index: row %s in %s/README.md has no decision file; remove the row or add the file\n' "$number" "$dir"
+  done < <(sed -n 's/^| \([0-9]\{4\}\) |.*/\1/p' "$dir/README.md")
+}
+
+completed_index_errors() {
+  local dir=$1 file name
+  for file in "$dir"/*.md; do
+    name=$(basename "$file")
+    [[ "$name" == README.md ]] && continue
+    grep -Fq "\`$name\`" "$dir/README.md" ||
+      printf 'completed plans index: %s is not listed in %s/README.md; list it\n' "$name" "$dir"
+  done
+  while read -r name; do
+    [[ -f "$dir/$name" ]] ||
+      printf 'completed plans index: %s/README.md lists %s, which does not exist; remove the entry\n' "$dir" "$name"
+  done < <(sed -n 's/^- `\([^`]*\.md\)`:.*/\1/p' "$dir/README.md")
+}
+
+errors=$(
+  decision_index_errors "$root/docs/decisions"
+  completed_index_errors "$root/docs/plans/completed"
+)
+[[ -z "$errors" ]] || fail "$errors"
+
+# Negative proof: a fixture whose indexes disagree with its folders is
+# reported in both directions.
+fixture=$(mktemp -d)
+trap 'rm -rf "$fixture"' EXIT
+mkdir "$fixture/decisions" "$fixture/completed"
+: >"$fixture/decisions/0001-unlisted.md"
+printf '| Decision | Title |\n| 0002 | Missing file |\n' >"$fixture/decisions/README.md"
+: >"$fixture/completed/unlisted.md"
+printf -- '- `missing.md`: not in the folder\n' >"$fixture/completed/README.md"
+fixture_errors=$(
+  decision_index_errors "$fixture/decisions"
+  completed_index_errors "$fixture/completed"
+)
+for expected in \
+  '0001-unlisted.md has no row' \
+  'row 0002 in' \
+  'unlisted.md is not listed' \
+  'lists missing.md, which does not exist'; do
+  [[ "$fixture_errors" == *"$expected"* ]] || fail "index check missed: $expected"
+done
 
 for heading in Outcome Context Scope Approach 'Risks And Recovery' Progress Decisions Validation Result; do
   require docs/templates/exec-plan.md "## $heading"

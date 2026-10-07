@@ -8,7 +8,7 @@ Start with the smallest authoritative surface.
   completion.
 - `ARCHITECTURE.md`: current product, code, state, update, and ownership
   boundaries.
-- `HARNESS.md`: product principles and installed-core model.
+- `HARNESS.md`: product principles.
 - `product/`: current product behavior and installation contract.
 - `decisions/`: lasting choices future work must inherit.
 - `plans/`: one durable working-memory document for work that needs it.
@@ -31,10 +31,3 @@ not overwrite those with upstream product assumptions.
 - `crates/harness/`: safe core installer/updater.
 - `scripts/`: platform bootstrap, release, and validation entrypoints.
 - `tests/`: behavior ownership and repository contract.
-
-## History
-
-The former SQLite control plane, protocol v1, story packets, migration evidence,
-and compatibility documentation are preserved by Git history and immutable
-`harness-cli-v*` tags. They are intentionally absent from the current tree so
-search and agent retrieval return current product authority.

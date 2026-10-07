@@ -20,26 +20,11 @@ Harness makes repository truth easier to retrieve and maintain.
 
 ## Installed Core
 
-The core provides:
-
-- a small agent entrypoint;
-- workflow and documentation maps;
-- product, decision, and execution-plan locations;
-- templates for durable work and application operation;
-- an invariant-encoding pattern and request-triggered skill; and
-- explicit-only onboarding, proposal-audit, and improvement skills.
-
-It provides no fabricated product domains or validation commands.
+`scripts/harness-install-files.txt` declares the core, and decision 0020 bounds
+it. It provides no fabricated product domains or validation commands.
 
 ## Evidence
 
 Release claims are bounded to fresh installation, repository navigation and
 authority behavior, and safe updater lifecycle. Consumer runtime experiments
 may improve guidance, but they do not become universal capability claims.
-
-## End-Of-Life Boundary
-
-The SQLite control plane and protocol v1 are historical products. They are
-available only from immutable historical releases and Git history. The current
-tree does not maintain a compatibility implementation, schema, state snapshot,
-release train, or installer profile.

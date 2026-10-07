@@ -48,9 +48,10 @@ while IFS= read -r path; do
   fi
 done <<<"$manifest_sources"
 
-# The upstream docs/plans/README.md is not the installed one (its source is
-# under crates/harness/assets/), and a regex dot must not match any character.
-for unrelated in docs/plans/README.md docs/WORKFLOWxmd docs/HARNESS.md README.md docs/research/application-legibility.md; do
+# The upstream docs/README.md, docs/plans/README.md, and docs/product/README.md
+# are not the installed ones (their sources are under crates/harness/assets/),
+# and a regex dot must not match any character.
+for unrelated in docs/README.md docs/plans/README.md docs/product/README.md docs/WORKFLOWxmd docs/HARNESS.md README.md docs/research/application-legibility.md; do
   if printf '%s\n' "$unrelated" | "$classifier"; then
     echo "unrelated path triggered Harness core publication: $unrelated" >&2
     exit 1

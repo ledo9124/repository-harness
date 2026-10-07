@@ -13,12 +13,9 @@ understand without adding a parallel control plane.
 
 ## Before Editing
 
-1. Read `AGENTS.md` and `docs/WORKFLOW.md`.
-2. Identify the repository authority for externally observable behavior.
-3. Use a durable plan only when the work spans sessions, coordinates people,
-   has meaningful dependencies, or needs recovery memory.
-4. Keep the change at one product owner.
-5. Select proof that observes the changed behavior.
+Read `AGENTS.md` and `docs/WORKFLOW.md`, and follow the workflow. It holds the
+one list of when work needs a durable plan, the authority and proof gates, and
+the completion standard. Keep each change at one product owner.
 
 ## Pull Request
 
@@ -55,5 +52,4 @@ Do not add a task database, story lifecycle, trace score, generic orchestrator,
 application stack, or product-specific policy without a new accepted product
 decision.
 
-Protocol v1 and `harness-cli` are end-of-life. Historical fixes belong on a
-pinned historical branch or fork, not in the current product.
+Protocol v1 work is out of scope here; see decision 0027.

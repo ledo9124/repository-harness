@@ -23,9 +23,9 @@ AGENTS.md <- compose:scripts/agent-harness-block.md
 .agents/skills/onboard-repository/scripts/emit_evidence_bundle.py
 .agents/skills/onboard-repository/scripts/render_patch.py
 docs/WORKFLOW.md
-docs/README.md
+docs/README.md <- crates/harness/assets/docs/README.md
 docs/patterns/encoding-invariants.md
-docs/product/README.md
+docs/product/README.md <- crates/harness/assets/docs/product/README.md
 docs/plans/README.md <- crates/harness/assets/docs/plans/README.md
 docs/plans/active/README.md
 docs/plans/completed/README.md <- crates/harness/assets/docs/plans/completed/README.md

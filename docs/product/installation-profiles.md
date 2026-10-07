@@ -33,13 +33,12 @@ stateless: delete only `.agents/skills/engineering-wisdom/`.
 
 Advice cannot establish consumer policy or authorize an architecture rewrite.
 
-## Merge And Override
+## Install Options
 
-- `--merge` / `-Merge`: preserve existing files and add missing managed
-  paths.
-- `--override` / `-Override`: back up and replace protected Harness paths.
-- `--force` / `-Force`: overwrite individual managed files with backups.
-- `--dry-run` / `-DryRun`: preview without writing.
+`scripts/install-harness.sh --help` lists the options for preserving existing
+files, replacing protected paths, and previewing. The PowerShell bootstrap takes
+the same options, and `tests/installer/test-install-harness-modes.sh` proves
+each mode.
 
 ## Update
 
@@ -51,9 +50,3 @@ Overlapping text edits stage a frozen resolution session. Structural conflicts
 must be corrected before replanning. Successful activation writes provenance
 last and replaces only the selected repository's executable after core files
 succeed.
-
-## Removed Profile
-
-The former `--with-cli`, `--upgrade-cli`, `-WithCli`, and `-UpgradeCli`
-profiles ended with protocol v1. Current installers reject those options.
-Existing consumer databases and binaries are not automatically deleted.
