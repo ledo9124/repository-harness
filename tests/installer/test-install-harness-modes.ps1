@@ -208,6 +208,17 @@ try {
     & $RemoteInstaller -Directory $Remote -Yes | Out-Null
     if (!(Test-Path (Join-Path $Remote "scripts/bin/harness.exe"))) { throw "verified remote core binary missing" }
 
+    # A consumer-like tree (AGENTS.md, docs/HARNESS.md, a copied installer, no
+    # payload manifest) is not a source checkout: the installer stays remote.
+    $Consumer = Join-Path $Temp "consumer-like"
+    New-Item -ItemType Directory -Force (Join-Path $Consumer "scripts"), (Join-Path $Consumer "docs") | Out-Null
+    "consumer agents" | Set-Content (Join-Path $Consumer "AGENTS.md")
+    "consumer harness doc" | Set-Content (Join-Path $Consumer "docs/HARNESS.md")
+    Copy-Item (Join-Path $Root "scripts/install-harness.ps1") (Join-Path $Consumer "scripts/install-harness.ps1")
+    $ConsumerOutput = (& (Join-Path $Consumer "scripts/install-harness.ps1") -Directory (Join-Path $Temp "consumer-target") -Yes 6>&1 | Out-String)
+    if (!$ConsumerOutput.Contains("Harness source: file://")) { throw "consumer-like tree was taken as a local checkout" }
+    if (!(Test-Path (Join-Path $Temp "consumer-target/docs/WORKFLOW.md"))) { throw "consumer-like remote install missing WORKFLOW.md" }
+
     "bad-checksum" | Set-Content -Encoding ascii "$CoreAsset.sha256"
     $AcceptedChecksum = $false
     try {

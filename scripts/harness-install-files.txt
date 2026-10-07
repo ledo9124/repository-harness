@@ -1,5 +1,15 @@
 # Default Harness core payload embedded in the Rust `harness` binary.
 # Keep this profile generic, repository-centered, and free of hidden task state.
+#
+# One entry per installed file, in embedded order, declared only here: the
+# binary build (crates/harness/build.rs), the payload tests, and the release
+# classifier read this file.
+#   destination                  installed path; also the source path in this
+#                                repository
+#   destination <- source        source path in this repository when it differs
+#   destination <- compose:src   installed file is composed from the source
+#                                (AGENTS.md: heading + scripts/agent-harness-block.md)
+AGENTS.md <- compose:scripts/agent-harness-block.md
 .agents/skills/audit-onboarding-proposal/SKILL.md
 .agents/skills/audit-onboarding-proposal/agents/openai.yaml
 .agents/skills/audit-onboarding-proposal/scripts/validate_evidence_capsule.py
@@ -12,15 +22,14 @@
 .agents/skills/onboard-repository/references/evidence-capsule-v2.md
 .agents/skills/onboard-repository/scripts/emit_evidence_bundle.py
 .agents/skills/onboard-repository/scripts/render_patch.py
-AGENTS.md
 docs/WORKFLOW.md
 docs/README.md
 docs/patterns/encoding-invariants.md
 docs/product/README.md
-docs/plans/README.md
+docs/plans/README.md <- crates/harness/assets/docs/plans/README.md
 docs/plans/active/README.md
-docs/plans/completed/README.md
-docs/decisions/README.md
+docs/plans/completed/README.md <- crates/harness/assets/docs/plans/completed/README.md
+docs/decisions/README.md <- crates/harness/assets/docs/decisions/README.md
 docs/templates/application-runbook.md
 docs/templates/decision.md
 docs/templates/exec-plan.md

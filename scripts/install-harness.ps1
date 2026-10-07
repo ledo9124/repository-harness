@@ -40,7 +40,8 @@ function Resolve-TargetPath([string]$PathValue) {
 function Get-SourceMode {
     if ($PSScriptRoot) {
         $candidate = Split-Path -Parent $PSScriptRoot
-        if ((Test-Path (Join-Path $candidate "AGENTS.md")) -and (Test-Path (Join-Path $candidate "docs/HARNESS.md"))) {
+        # Only a source checkout carries the payload manifest.
+        if ((Test-Path (Join-Path $candidate "AGENTS.md")) -and (Test-Path (Join-Path $candidate $script:PayloadManifest))) {
             return @{ Mode = "local"; Root = $candidate }
         }
     }
@@ -351,11 +352,11 @@ function Install-EngineeringWisdom {
 $script:Created = 0
 $script:Updated = 0
 $script:Skipped = 0
+$script:PayloadManifest = "scripts/harness-install-files.txt"
+$script:EngineeringWisdomPayloadManifest = "scripts/engineering-wisdom-install-files.txt"
 $script:Source = Get-SourceMode
 $script:SourceBaseUrl = if ($env:HARNESS_SOURCE_BASE_URL) { $env:HARNESS_SOURCE_BASE_URL.TrimEnd("/") } else { "https://raw.githubusercontent.com/ledo9124/repository-harness/main" }
 $script:CoreSourceBaseUrl = if ($env:HARNESS_CORE_SOURCE_BASE_URL) { $env:HARNESS_CORE_SOURCE_BASE_URL.TrimEnd("/") } else { "https://raw.githubusercontent.com/ledo9124/repository-harness/main" }
-$script:PayloadManifest = "scripts/harness-install-files.txt"
-$script:EngineeringWisdomPayloadManifest = "scripts/engineering-wisdom-install-files.txt"
 $script:TargetDir = Resolve-TargetPath $Directory
 $script:BackupDir = Join-Path $script:TargetDir (".harness-backup/" + (Get-Date -Format "yyyyMMddHHmmss"))
 $script:ConflictAction = "install"

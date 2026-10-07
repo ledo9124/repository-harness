@@ -11,7 +11,11 @@ scripts/validate-premerge.sh
 - `install-harness.sh`: Bash bootstrap for the versioned Rust `harness`
   candidate.
 - `install-harness.ps1`: PowerShell bootstrap with the same product contract.
-- `harness-install-files.txt`: exact embedded core payload.
+- `harness-install-files.txt`: the one declaration of the exact embedded core
+  payload (`destination` or `destination <- source`; `compose:` marks the
+  composed `AGENTS.md`). `crates/harness/build.rs` embeds from it, the tests and
+  the release classifier read it, and the installers treat a directory with it
+  beside them as a source checkout.
 - `engineering-wisdom-install-files.txt`: independent optional advisory
   payload.
 - `agent-harness-block.md` and `claude-harness-block.md`: managed entrypoint

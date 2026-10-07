@@ -81,8 +81,10 @@ for heading in Outcome Context Scope Approach 'Risks And Recovery' Progress Deci
   require docs/templates/exec-plan.md "## $heading"
 done
 
-while IFS= read -r payload; do
-  [[ -f "$root/$payload" ]] || fail "core manifest target is missing: $payload"
+while read -r payload _ source; do
+  source="${source:-$payload}"
+  source="${source#compose:}"
+  [[ -f "$root/$source" ]] || fail "core manifest source is missing for $payload: $source"
 done < <(sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' "$root/scripts/harness-install-files.txt")
 
 compatibility_paths=(
