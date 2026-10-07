@@ -4,7 +4,7 @@ Date: 2026-10-07
 
 ## Status
 
-Active. Waiting for Human's choices (below) before any product edit.
+Active.
 
 ## Outcome
 
@@ -125,12 +125,21 @@ Order, so each step is verifiable alone:
 
 ## Progress
 
-- [ ] Human's choices C1-C5
+- [x] Human's choices C1-C5 (SLP ledger D20)
 - [ ] Item 6, item 3 (no consumer effect)
 - [ ] Items 1, 2, 4, 5
 - [ ] `scripts/validate-premerge.sh`; release per C5
 
 ## Decisions
+
+- 2026-10-07, Human (SLP ledger D20): C1 (a) a thin consumer-only installed
+  `docs/README.md`, and a consumer `docs/product/README.md` without the
+  "upstream contract" sentence; C2 (a) decision 0032 plus the path check; C3
+  (a) index all eight completed plans; C4 keep `WORKFLOW.md` invariant steps
+  2-4 and the plans `active/` and `completed/` READMEs, remove upstream-only
+  duplicates; C5 "Merge, push, tag, phát hành": release a new core version
+  through the repository's release workflow, with consumer effects in the
+  release notes. Full pre-merge validation first.
 
 ## Validation
 
