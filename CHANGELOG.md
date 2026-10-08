@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-08 - PR #16
+
+- docs(decisions): 0033 each kind of truth has one owner (@ledo9124)
+- Merge commit: `232604effc2a47d750973ee4bc620f57fabc75e1`
+- Harness core release: not required
+- Changed files: 4 total
+  - `docs/HARNESS.md`
+  - `docs/decisions/0033-each-kind-of-truth-has-one-owner.md`
+  - `docs/decisions/README.md`
+  - `tests/docs/test-doc-contracts.sh`
+
 ## 2026-10-07 - PR #15
 
 - docs: keep docs for what code cannot establish; consumer-only installed maps (decision 0032) (@ledo9124)
