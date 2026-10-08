@@ -447,6 +447,12 @@ fn apply_locked(
     state: &InstallationState,
     mutations: &[WorkspaceMutation],
 ) -> Result<ApplyReceipt, PortError> {
+    // Refuse a symlinked backup folder before anything changes: backups and
+    // their ignore file must stay inside the repository.
+    let backup_dir = root.join(".harness-backup");
+    if fs::symlink_metadata(&backup_dir).is_ok() {
+        reject_symlink(&backup_dir, ".harness-backup")?;
+    }
     let id = transaction_id()?;
     let backup_relative = format!(".harness-backup/harness-core-{id}");
     let backup_root = root.join(&backup_relative);
@@ -1025,6 +1031,9 @@ mod tests {
             // composed AGENTS.md, checked out in either uniform ending.
             (&b"# A\n\nb\r\nc\r\n"[..], &b"# A\r\n\r\nb\r\nc\r\n"[..]),
             (&b"# A\n\nb\r\nc\r\n"[..], &b"# A\n\nb\nc\n"[..]),
+            // The reverse split: a CRLF heading over an LF block.
+            (&b"# A\r\n\r\nb\nc\n"[..], &b"# A\r\n\r\nb\r\nc\r\n"[..]),
+            (&b"# A\r\n\r\nb\nc\n"[..], &b"# A\n\nb\nc\n"[..]),
         ] {
             let root = tempfile::tempdir().unwrap();
             store.apply(root.path(), &state(hashed), &[]).unwrap();
@@ -1146,5 +1155,33 @@ mod tests {
             )
             .unwrap_err();
         assert!(error.to_string().contains("refusing symlink"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn refuses_a_symlinked_backup_folder_before_any_change() {
+        use std::os::unix::fs::symlink;
+
+        let root = tempfile::tempdir().unwrap();
+        let outside = tempfile::tempdir().unwrap();
+        let store = FileSystemInstallationState;
+        let write = |content: &[u8]| WorkspaceMutation::Write {
+            path: RelativePath::parse("docs/WORKFLOW.md").unwrap(),
+            content: content.to_vec(),
+        };
+        store
+            .apply(root.path(), &state(b"base"), &[write(b"first")])
+            .unwrap();
+        symlink(outside.path(), root.path().join(".harness-backup")).unwrap();
+        let error = store
+            .apply(root.path(), &state(b"next"), &[write(b"second")])
+            .unwrap_err();
+        assert!(error.to_string().contains("refusing symlink"));
+        assert_eq!(
+            fs::read(root.path().join("docs/WORKFLOW.md")).unwrap(),
+            b"first"
+        );
+        assert_eq!(store.load(root.path()).unwrap().unwrap(), state(b"base"));
+        assert!(fs::read_dir(outside.path()).unwrap().next().is_none());
     }
 }

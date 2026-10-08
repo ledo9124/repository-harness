@@ -880,8 +880,20 @@ else
 fi
 
 if [ -d "$TARGET_DIR" ]; then
+  # Backups must stay inside the repository.
+  [ ! -L "$TARGET_DIR/.harness-backup" ] || fail "refusing symlink for .harness-backup in $TARGET_DIR"
   check_protected_target_paths
 fi
+
+# Backups are local undo data: on every exit, success or failure, the backup
+# folder ignores itself. A consumer's existing .gitignore there, or a symlink
+# in its place, is left alone.
+ensure_backup_ignore() {
+  local backup="$TARGET_DIR/.harness-backup"
+  [ "$DRY_RUN" -eq 0 ] && [ -d "$backup" ] && [ ! -L "$backup" ] || return 0
+  [ -e "$backup/.gitignore" ] || [ -L "$backup/.gitignore" ] || printf '*\n' >"$backup/.gitignore"
+}
+trap ensure_backup_ignore EXIT
 
 if [ "$SOURCE_MODE" = "local" ]; then
   log "Harness source: $SOURCE_ROOT"
@@ -902,12 +914,6 @@ install_harness_core
 install_engineering_wisdom
 refresh_agent_shim
 write_claude_shim
-
-# Backups are local undo data; the backup folder ignores itself.
-if [ "$DRY_RUN" -eq 0 ] && [ -d "$TARGET_DIR/.harness-backup" ] && [ ! -L "$TARGET_DIR/.harness-backup" ] &&
-  [ ! -e "$TARGET_DIR/.harness-backup/.gitignore" ]; then
-  printf '*\n' >"$TARGET_DIR/.harness-backup/.gitignore"
-fi
 
 log ""
 log "Done. Created: $CREATED, updated: $UPDATED, skipped: $SKIPPED."

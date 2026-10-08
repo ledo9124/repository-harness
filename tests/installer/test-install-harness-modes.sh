@@ -292,6 +292,8 @@ if HARNESS_CORE_BINARY="$fake_candidate" \
 fi
 [[ "$(shasum -a 256 "$conflict/scripts/bin/harness" | awk '{ print $1 }')" == "$old_binary_hash" ]]
 [[ -x "$conflict/.harness-core/update-candidate/harness" ]]
+# The conflict exit still leaves the backup folder ignoring itself.
+[[ -d "$conflict/.harness-backup" && "$(cat "$conflict/.harness-backup/.gitignore")" == '*' ]]
 printf 'human-approved result\n' >"$conflict/.harness-core/update/resolved/AGENTS.md"
 HARNESS_CORE_BINARY="$fake_candidate" \
   "$installer" --directory "$conflict" --merge --yes >"$temp/core-continue.out"
@@ -300,5 +302,24 @@ cmp -s "$fake_candidate" "$conflict/scripts/bin/harness"
 [[ ! -e "$conflict/.harness-core/update" && ! -e "$conflict/.harness-core/update-candidate" ]]
 core_backup=$(find "$conflict/.harness-backup" -path '*/scripts/bin/harness' -type f | head -n 1)
 [[ "$(shasum -a 256 "$core_backup" | awk '{ print $1 }')" == "$old_binary_hash" ]]
+
+# A symlinked backup folder is refused before anything changes.
+linked="$temp/linked-backup"
+linked_sink="$temp/linked-backup-sink"
+mkdir -p "$linked" "$linked_sink"
+ln -s "$linked_sink" "$linked/.harness-backup"
+if install --directory "$linked" --yes >"$temp/linked-backup.out" 2>&1; then
+  echo 'installer unexpectedly accepted a symlinked .harness-backup' >&2
+  exit 1
+fi
+grep -Fq 'refusing symlink for .harness-backup' "$temp/linked-backup.out"
+[[ ! -e "$linked/AGENTS.md" && -z "$(find "$linked_sink" -mindepth 1 -print -quit)" ]]
+
+# A dangling .gitignore link in the backup folder is not written through.
+dangling="$temp/dangling-ignore"
+mkdir -p "$dangling/.harness-backup"
+ln -s "$temp/dangling-target" "$dangling/.harness-backup/.gitignore"
+install --directory "$dangling" --yes >/dev/null
+[[ -L "$dangling/.harness-backup/.gitignore" && ! -e "$temp/dangling-target" ]]
 
 echo 'Bash core install/update, safety, shims, opt-in, and removed-flag modes passed'

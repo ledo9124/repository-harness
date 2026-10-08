@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -33,6 +34,8 @@ LEGACY_FILES: dict[str, frozenset[str]] = {
 }
 
 SKIP_DIRS = {".git", ".harness-core", ".harness-backup", "node_modules"}
+# This script names every legacy path in its table; it is not a reference.
+SELF = ".agents/skills/migrate-harness/scripts/find_legacy.py"
 
 
 def normalized_sha256(content: bytes) -> str:
@@ -57,20 +60,24 @@ def candidate_files(root: Path) -> list[str]:
         return sorted(files)
 
 
-def managed_paths(root: Path) -> set[str]:
-    """Paths the installed core manages; Harness's own text is not a consumer reference."""
-    try:
-        manifest = json.loads((root / ".harness-core" / "manifest.json").read_text(encoding="utf-8"))
-        return {entry["path"] for entry in manifest.get("files", [])}
-    except (OSError, ValueError, KeyError, TypeError):
-        return set()
+def through_symlink(root: Path, relative: str) -> bool:
+    """Whether the path or any directory below the root on the way is a symlink."""
+    current = root
+    for part in Path(relative).parts:
+        current = current / part
+        if current.is_symlink():
+            return True
+    return False
 
 
 def scan(root: Path, legacy: dict[str, frozenset[str]]) -> dict[str, list]:
     report: dict[str, list] = {"delete": [], "keep": [], "references": [], "pending": []}
     for path, hashes in sorted(legacy.items()):
         target = root / path
-        if target.is_symlink() or (target.exists() and not target.is_file()):
+        if through_symlink(root, path):
+            if os.path.lexists(target):
+                report["keep"].append({"path": path, "reason": "path passes through a symlink"})
+        elif target.exists() and not target.is_file():
             report["keep"].append({"path": path, "reason": "not a regular file"})
         elif target.is_file():
             if normalized_sha256(target.read_bytes()) in hashes:
@@ -79,12 +86,11 @@ def scan(root: Path, legacy: dict[str, frozenset[str]]) -> dict[str, list]:
                 report["keep"].append({"path": path, "reason": "content differs from every release copy"})
 
     names = sorted({Path(path).name for path in legacy})
-    managed = managed_paths(root)
     for relative in candidate_files(root):
-        if relative in legacy or relative in managed or SKIP_DIRS.intersection(Path(relative).parts):
+        if relative in legacy or relative == SELF or SKIP_DIRS.intersection(Path(relative).parts):
             continue
         path = root / relative
-        if not path.is_file() or path.is_symlink():
+        if not path.is_file() or through_symlink(root, relative):
             continue
         try:
             lines = path.read_text(encoding="utf-8").splitlines()
@@ -100,7 +106,7 @@ def scan(root: Path, legacy: dict[str, frozenset[str]]) -> dict[str, list]:
             {"item": ".harness-core/update", "action": "finish with `harness update --continue` or `--abort`"}
         )
     backup = root / ".harness-backup"
-    if backup.is_dir() and not backup.is_symlink() and not (backup / ".gitignore").exists():
+    if backup.is_dir() and not backup.is_symlink() and not os.path.lexists(backup / ".gitignore"):
         report["pending"].append(
             {"item": ".harness-backup/.gitignore", "action": "write it with the single line `*`"}
         )
@@ -144,6 +150,26 @@ def self_test() -> None:
         assert report["keep"][0]["path"] == "docs/old.md", report
         assert report["pending"] == [], report
         assert "clean:" in render(report)
+
+        # A Harness-managed file the consumer edited is still searched.
+        (root / "AGENTS.md").write_text("Read docs/old.md first.\n", encoding="utf-8")
+        (root / ".harness-core").mkdir()
+        (root / ".harness-core/manifest.json").write_text('{"files": [{"path": "AGENTS.md"}]}', encoding="utf-8")
+        refs = [item["path"] for item in scan(root, legacy)["references"]]
+        assert refs == ["AGENTS.md", "notes.md"], refs
+
+    # A legacy path reached through a symlinked directory is never deleted.
+    with tempfile.TemporaryDirectory() as temp, tempfile.TemporaryDirectory() as outside:
+        root = Path(temp)
+        (Path(outside) / "old.md").write_bytes(content)
+        try:
+            (root / "docs").symlink_to(outside, target_is_directory=True)
+        except OSError:
+            print("find_legacy self-test: symlink case skipped (symlinks unavailable)")
+        else:
+            report = scan(root, legacy)
+            assert report["delete"] == [], report
+            assert report["keep"] == [{"path": "docs/old.md", "reason": "path passes through a symlink"}], report
     print("find_legacy self-test passed")
 
 
