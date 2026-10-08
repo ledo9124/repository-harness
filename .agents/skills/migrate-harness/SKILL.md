@@ -48,7 +48,9 @@ conflict:
 ## 3. Remove The Legacy
 
 Run `python3 .agents/skills/migrate-harness/scripts/find_legacy.py` (`python`
-on Windows when `python3` is absent) and act on each line:
+on Windows when `python3` is absent). Without Python, apply its rule by hand:
+hash each path in its `LEGACY_FILES` table after rewriting CRLF to LF, compare
+with the listed hashes, and search for the paths' file names. Act on each line:
 
 - `delete`: delete the file (`git rm` when tracked) and any directory this
   leaves empty.

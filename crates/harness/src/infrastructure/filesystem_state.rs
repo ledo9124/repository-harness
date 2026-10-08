@@ -658,6 +658,29 @@ fn verified_base_content(raw: &[u8], expected: &ContentHash) -> Result<Option<Ve
     if hash_bytes(&crlf)? == *expected {
         return Ok(Some(crlf));
     }
+    // Older Windows releases (0.1.11 and 0.1.13 among them) composed AGENTS.md
+    // from an LF heading and a CRLF block and hashed those mixed bytes. Try each split of the lines
+    // into one ending before and the other after; only an exact hash matches.
+    let lines = lf
+        .split_inclusive(|&byte| byte == b'\n')
+        .collect::<Vec<_>>();
+    for split in 1..lines.len() {
+        for (before, after) in [(&b"\n"[..], &b"\r\n"[..]), (&b"\r\n"[..], &b"\n"[..])] {
+            let mut mixed = Vec::with_capacity(crlf.len());
+            for (index, line) in lines.iter().enumerate() {
+                match line.strip_suffix(b"\n") {
+                    Some(text) => {
+                        mixed.extend_from_slice(text);
+                        mixed.extend_from_slice(if index < split { before } else { after });
+                    }
+                    None => mixed.extend_from_slice(line),
+                }
+            }
+            if hash_bytes(&mixed)? == *expected {
+                return Ok(Some(mixed));
+            }
+        }
+    }
     Ok(None)
 }
 
@@ -998,6 +1021,10 @@ mod tests {
         for (hashed, checked_out) in [
             (&b"a\nb\n"[..], &b"a\r\nb\r\n"[..]),
             (&b"a\r\nb\r\n"[..], &b"a\nb\n"[..]),
+            // An LF heading over a CRLF block, as older Windows releases
+            // composed AGENTS.md, checked out in either uniform ending.
+            (&b"# A\n\nb\r\nc\r\n"[..], &b"# A\r\n\r\nb\r\nc\r\n"[..]),
+            (&b"# A\n\nb\r\nc\r\n"[..], &b"# A\n\nb\nc\n"[..]),
         ] {
             let root = tempfile::tempdir().unwrap();
             store.apply(root.path(), &state(hashed), &[]).unwrap();
