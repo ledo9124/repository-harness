@@ -18,7 +18,6 @@ import argparse
 import hashlib
 import json
 import os
-import stat
 import subprocess
 import sys
 import tempfile
@@ -61,15 +60,21 @@ def candidate_files(root: Path) -> list[str]:
         return sorted(files)
 
 
+# Windows IO_REPARSE_TAG_SYMLINK and IO_REPARSE_TAG_MOUNT_POINT (junction).
+LINK_REPARSE_TAGS = {0xA000000C, 0xA0000003}
+
+
 def is_link(path: Path) -> bool:
-    """A symlink, or any Windows reparse point such as a directory junction."""
+    """A symlink, or a Windows directory junction (which is_symlink misses).
+
+    Other reparse points, such as cloud placeholders, are ordinary files here.
+    """
     if path.is_symlink():
         return True
     try:
-        attributes = getattr(os.lstat(path), "st_file_attributes", 0)
+        return getattr(os.lstat(path), "st_reparse_tag", 0) in LINK_REPARSE_TAGS
     except OSError:
         return False
-    return bool(attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT)
 
 
 def through_symlink(root: Path, relative: str) -> bool:

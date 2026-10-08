@@ -447,8 +447,9 @@ fn apply_locked(
     state: &InstallationState,
     mutations: &[WorkspaceMutation],
 ) -> Result<ApplyReceipt, PortError> {
-    // Refuse a symlinked backup folder before anything changes: backups and
-    // their ignore file must stay inside the repository.
+    // Refuse a symlinked backup folder before any backup, journal, or
+    // workspace change: backups and their ignore file must stay inside the
+    // repository.
     let backup_dir = root.join(".harness-backup");
     if fs::symlink_metadata(&backup_dir).is_ok() {
         reject_symlink(&backup_dir, ".harness-backup")?;
