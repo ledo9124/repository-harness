@@ -402,6 +402,19 @@ fn ensure_state_ignore(state_root: &Path) -> Result<(), PortError> {
     )
 }
 
+/// Backups are local undo data, not repository content, so the backup folder
+/// ignores itself and no consumer `.gitignore` rule is needed. An existing
+/// `.gitignore` there is left as the consumer wrote it.
+fn ensure_backup_ignore(root: &Path) -> Result<(), PortError> {
+    let backup_dir = root.join(".harness-backup");
+    reject_symlink(&backup_dir, ".harness-backup")?;
+    let path = backup_dir.join(".gitignore");
+    if fs::symlink_metadata(&path).is_ok() {
+        return Ok(());
+    }
+    copy_bytes(b"*\n", &path)
+}
+
 fn verify_frozen_locked(root: &Path, expected: &[FrozenWorkspaceFile]) -> Result<(), PortError> {
     for frozen in expected {
         validate_path(root, &frozen.path)?;
@@ -513,6 +526,9 @@ fn apply_locked(
         });
     if !backup_has_content && backup_root.exists() {
         fs::remove_dir_all(&backup_root).map_err(io_error)?;
+    }
+    if backup_has_content {
+        ensure_backup_ignore(root)?;
     }
     Ok(ApplyReceipt {
         backup_path: backup_has_content.then_some(backup_relative),
@@ -947,6 +963,32 @@ mod tests {
             b"local"
         );
         assert_eq!(store.load(root.path()).unwrap().unwrap(), state(b"base"));
+    }
+
+    #[test]
+    fn backup_folder_ignores_itself_and_keeps_a_consumer_ignore() {
+        let root = tempfile::tempdir().unwrap();
+        let store = FileSystemInstallationState;
+        let write = |content: &[u8]| WorkspaceMutation::Write {
+            path: RelativePath::parse("docs/WORKFLOW.md").unwrap(),
+            content: content.to_vec(),
+        };
+        let ignore = root.path().join(".harness-backup/.gitignore");
+        store
+            .apply(root.path(), &state(b"base"), &[write(b"first")])
+            .unwrap();
+        assert!(!ignore.exists(), "a first install has nothing to back up");
+        let receipt = store
+            .apply(root.path(), &state(b"base"), &[write(b"second")])
+            .unwrap();
+        assert!(receipt.backup_path.is_some());
+        assert_eq!(fs::read(&ignore).unwrap(), b"*\n");
+
+        fs::write(&ignore, b"consumer rule\n").unwrap();
+        store
+            .apply(root.path(), &state(b"base"), &[write(b"third")])
+            .unwrap();
+        assert_eq!(fs::read(&ignore).unwrap(), b"consumer rule\n");
     }
 
     #[test]

@@ -428,6 +428,15 @@ Install-HarnessCore
 Install-EngineeringWisdom
 Refresh-AgentShimFile
 
+# Backups are local undo data; the backup folder ignores itself.
+$backupRoot = Join-Path $script:TargetDir ".harness-backup"
+$backupIgnore = Join-Path $backupRoot ".gitignore"
+if (!$DryRun -and (Test-Path -LiteralPath $backupRoot -PathType Container) -and
+    !((Get-Item -LiteralPath $backupRoot -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -and
+    !(Test-Path -LiteralPath $backupIgnore)) {
+    [IO.File]::WriteAllText($backupIgnore, "*`n")
+}
+
 Write-Step ""
 Write-Step "Done. Created: $script:Created, updated: $script:Updated, skipped: $script:Skipped."
 if ($script:Skipped -gt 0 -and !$Force) {

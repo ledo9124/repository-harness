@@ -6,8 +6,8 @@ Harness has one product profile and one independent advisory add-on.
 
 The exact core payload is declared in
 `scripts/harness-install-files.txt`. It contains generic repository guidance,
-working-memory structure, an invariant-encoding pattern and skill, and
-explicit-only onboarding and improvement skills.
+working-memory structure, an invariant-encoding pattern and skill,
+explicit-only onboarding and improvement skills, and a migration skill.
 
 The platform bootstrap installs a checksum-verified `harness` binary under
 `scripts/bin/` and delegates installation or update to that candidate.
@@ -16,10 +16,17 @@ Core installation:
 
 - records exact upstream bytes under `.harness-core/`;
 - preserves consumer files through merge or human-directed conflict handling;
-- backs up replaced files;
+- backs up replaced files under `.harness-backup/`, which ignores itself;
 - does not install an application stack or product policy;
 - does not install schemas, databases, orchestration, or background processes;
 - does not delete pre-existing legacy Harness files.
+
+## Migration
+
+Removing legacy is a separate step the user asks for (decisions 0027 and
+0034). The `migrate-harness` skill updates an install from harness-v0.1.11 or
+later, deletes only legacy files whose bytes equal a release's copy, and
+reports every other file at a legacy path and every reference to one.
 
 ## Engineering Wisdom Add-On
 

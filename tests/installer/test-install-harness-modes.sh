@@ -96,6 +96,8 @@ install --directory "$force" --with-engineering-wisdom --force --yes >"$temp/for
 ! grep -Fq 'consumer mutation' "$force/.agents/skills/engineering-wisdom/SKILL.md"
 force_backup=$(find "$force/.harness-backup" -path '*/.agents/skills/engineering-wisdom/SKILL.md' -type f | head -n 1)
 grep -Fxq 'consumer mutation' "$force_backup"
+# The backup folder ignores itself; no consumer .gitignore rule is written.
+[[ "$(cat "$force/.harness-backup/.gitignore")" == '*' ]]
 
 # Claude shim appends one canonical block, keeps local text, and backs it up.
 claude="$temp/claude"

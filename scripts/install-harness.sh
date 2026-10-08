@@ -903,6 +903,12 @@ install_engineering_wisdom
 refresh_agent_shim
 write_claude_shim
 
+# Backups are local undo data; the backup folder ignores itself.
+if [ "$DRY_RUN" -eq 0 ] && [ -d "$TARGET_DIR/.harness-backup" ] && [ ! -L "$TARGET_DIR/.harness-backup" ] &&
+  [ ! -e "$TARGET_DIR/.harness-backup/.gitignore" ]; then
+  printf '*\n' >"$TARGET_DIR/.harness-backup/.gitignore"
+fi
+
 log ""
 log "Done. Created: $CREATED, updated: $UPDATED, skipped: $SKIPPED."
 

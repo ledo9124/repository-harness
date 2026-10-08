@@ -99,6 +99,7 @@ try {
         Where-Object { $_.FullName -like "*engineering-wisdom*" } |
         Select-Object -First 1
     if (!$ForceBackup -or !(Get-Content -Raw $ForceBackup.FullName).Contains("consumer mutation")) { throw "force backup missing old advisory file" }
+    if ((Get-Content -Raw (Join-Path $Force ".harness-backup/.gitignore")).Trim() -ne "*") { throw "backup folder does not ignore itself" }
 
     # Merge fills core gaps while retaining every legacy artifact unchanged.
     $Merge = Join-Path $Temp "merge"

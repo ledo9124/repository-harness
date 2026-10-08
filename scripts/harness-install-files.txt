@@ -17,6 +17,9 @@ AGENTS.md <- compose:scripts/agent-harness-block.md
 .agents/skills/encode-invariant/agents/openai.yaml
 .agents/skills/improve-harness/SKILL.md
 .agents/skills/improve-harness/agents/openai.yaml
+.agents/skills/migrate-harness/SKILL.md
+.agents/skills/migrate-harness/agents/openai.yaml
+.agents/skills/migrate-harness/scripts/find_legacy.py
 .agents/skills/onboard-repository/SKILL.md
 .agents/skills/onboard-repository/agents/openai.yaml
 .agents/skills/onboard-repository/references/evidence-capsule-v2.md

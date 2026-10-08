@@ -62,9 +62,11 @@ The default core contains:
 - the repository workflow and documentation map;
 - product, decision, and execution-plan structure;
 - optional templates for durable plans, decisions, application runbooks, and
-  evidence-backed Harness improvements; and
+  evidence-backed Harness improvements;
 - an invariant-encoding pattern and skill, plus explicit-only onboarding and
-  proposal-audit skills.
+  proposal-audit skills; and
+- a migration skill that, when asked, updates from an earlier release and
+  removes the unchanged files it left behind.
 
 It does not install application architecture, product policy, validation
 commands, credentials, a database, schemas, orchestration, or background
