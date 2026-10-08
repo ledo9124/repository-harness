@@ -43,6 +43,7 @@ current_files=(
   docs/decisions/0030-end-evidence-capsule-v1.md
   docs/decisions/0031-line-ending-independent-core-bytes.md
   docs/decisions/0032-installed-docs-name-only-installed-paths.md
+  docs/decisions/0033-each-kind-of-truth-has-one-owner.md
   docs/research/application-legibility.md
   .github/ISSUE_TEMPLATE/real-world-example.md
 )

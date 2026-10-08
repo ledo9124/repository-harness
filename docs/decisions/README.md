@@ -20,6 +20,7 @@ Use `docs/templates/decision.md`. Task-local choices stay in the active plan.
 | 0030 | End Evidence Capsule V1 And Final-Message Capsules |
 | 0031 | Line-Ending-Independent Core Bytes |
 | 0032 | Installed Docs Name Only Installed Paths |
+| 0033 | Each Kind Of Truth Has One Owner |
 
 These decisions describe upstream Harness. Installed consumers begin with an
 empty decision index and add only real consumer choices.
