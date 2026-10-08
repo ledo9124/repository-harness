@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-08 - PR #18
+
+- fix: v0.1.19 review findings 1-5 (backup symlink and ignore, reference scan, symlinked parent) (@ledo9124)
+- Merge commit: `1b44c4c9da9af533ff1dc315c22a31d9fd766886`
+- Harness core candidate: `harness-v0.1.20` (publication requires platform proof)
+- Changed files: 6 total
+  - `.agents/skills/migrate-harness/scripts/find_legacy.py`
+  - `crates/harness/src/infrastructure/filesystem_state.rs`
+  - `scripts/install-harness.ps1`
+  - `scripts/install-harness.sh`
+  - `tests/installer/test-install-harness-modes.ps1`
+  - `tests/installer/test-install-harness-modes.sh`
+
 ## 2026-10-08 - PR #17
 
 - feat(core): migrate-harness skill, self-ignoring backups, mixed-ending base fix (decision 0034) (@ledo9124)
