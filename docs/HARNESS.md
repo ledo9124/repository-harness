@@ -4,8 +4,10 @@ Harness makes repository truth easier to retrieve and maintain.
 
 ## Principles
 
-1. **Repository truth wins.** Product documents, decisions, plans, code, tests,
-   CI, runtime evidence, and Git history are authoritative.
+1. **Each kind of truth has one owner.** Code owns behavior; tests, CI, and
+   runtime evidence prove it; accepted product documents and decisions own
+   intent and constraints; plans are working memory, not authority.
+   Documentation holds what code cannot establish (decision 0033).
 2. **Load the smallest useful context.** `AGENTS.md` is an entrypoint, not an
    encyclopedia.
 3. **Process follows work shape.** Bounded work stays bounded; coordinated or
