@@ -361,8 +361,28 @@ $script:TargetDir = Resolve-TargetPath $Directory
 $script:BackupDir = Join-Path $script:TargetDir (".harness-backup/" + (Get-Date -Format "yyyyMMddHHmmss"))
 $script:ConflictAction = "install"
 
+# Backups are local undo data: on every exit, success or failure, the backup
+# folder ignores itself. A consumer's existing .gitignore there, or a link in
+# its place (even a dangling one), is left alone.
+function Ensure-BackupIgnore {
+    if ($DryRun -or !$script:TargetDir) { return }
+    $backupRoot = [IO.DirectoryInfo]::new((Join-Path $script:TargetDir ".harness-backup"))
+    if ([int]$backupRoot.Attributes -eq -1 -or
+        !($backupRoot.Attributes -band [IO.FileAttributes]::Directory) -or
+        ($backupRoot.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return }
+    $backupIgnore = [IO.FileInfo]::new((Join-Path $backupRoot.FullName ".gitignore"))
+    if ([int]$backupIgnore.Attributes -ne -1) { return }
+    [IO.File]::WriteAllText($backupIgnore.FullName, "*`n")
+}
+trap { Ensure-BackupIgnore; break }
+
 if ($Merge -and $Override) {
     Fail "Use only one of -Merge or -Override"
+}
+
+$backupLink = [IO.DirectoryInfo]::new((Join-Path $script:TargetDir ".harness-backup"))
+if ([int]$backupLink.Attributes -ne -1 -and ($backupLink.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    Fail "refusing symlink for .harness-backup in $script:TargetDir"
 }
 
 if (!$DryRun -and !(Test-Path $script:TargetDir)) {
@@ -428,14 +448,7 @@ Install-HarnessCore
 Install-EngineeringWisdom
 Refresh-AgentShimFile
 
-# Backups are local undo data; the backup folder ignores itself.
-$backupRoot = Join-Path $script:TargetDir ".harness-backup"
-$backupIgnore = Join-Path $backupRoot ".gitignore"
-if (!$DryRun -and (Test-Path -LiteralPath $backupRoot -PathType Container) -and
-    !((Get-Item -LiteralPath $backupRoot -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -and
-    !(Test-Path -LiteralPath $backupIgnore)) {
-    [IO.File]::WriteAllText($backupIgnore, "*`n")
-}
+Ensure-BackupIgnore
 
 Write-Step ""
 Write-Step "Done. Created: $script:Created, updated: $script:Updated, skipped: $script:Skipped."

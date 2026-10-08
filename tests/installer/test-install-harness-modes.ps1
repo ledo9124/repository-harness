@@ -241,6 +241,35 @@ try {
     }
     if ($AcceptedIdentity) { throw "installer unexpectedly accepted a mismatched core version" }
 
+    # A failing run still leaves the backup folder ignoring itself.
+    $FailedRun = Join-Path $Temp "failed-run"
+    New-Item -ItemType Directory -Force (Join-Path $FailedRun ".harness-backup/old") | Out-Null
+    $AcceptedConflict = $false
+    try {
+        & $Installer -Directory $FailedRun -Merge -Override -Yes | Out-Null
+        $AcceptedConflict = $true
+    } catch {
+        if (!$_.Exception.Message.Contains("Use only one of -Merge or -Override")) { throw }
+    }
+    if ($AcceptedConflict) { throw "installer unexpectedly accepted -Merge with -Override" }
+    if ((Get-Content -Raw (Join-Path $FailedRun ".harness-backup/.gitignore")).Trim() -ne "*") { throw "failing run left the backup folder unignored" }
+
+    # A junctioned backup folder is refused before anything is written.
+    $Junctioned = Join-Path $Temp "junction-backup"
+    $JunctionSink = Join-Path $Temp "junction-sink"
+    New-Item -ItemType Directory -Force $Junctioned, $JunctionSink | Out-Null
+    cmd /c mklink /J (Join-Path $Junctioned ".harness-backup") $JunctionSink | Out-Null
+    $AcceptedJunction = $false
+    try {
+        & $Installer -Directory $Junctioned -Yes | Out-Null
+        $AcceptedJunction = $true
+    } catch {
+        if (!$_.Exception.Message.Contains("refusing symlink for .harness-backup")) { throw }
+    }
+    if ($AcceptedJunction) { throw "installer unexpectedly accepted a junctioned .harness-backup" }
+    if ((Test-Path (Join-Path $Junctioned "AGENTS.md")) -or (Get-ChildItem -Force $JunctionSink)) { throw "junction refusal wrote files" }
+    cmd /c rmdir (Join-Path $Junctioned ".harness-backup") | Out-Null
+
     Write-Host "PowerShell core install, safety, shim, opt-in, and removed-parameter modes passed"
 }
 finally {
