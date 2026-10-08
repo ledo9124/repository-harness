@@ -18,6 +18,7 @@ import argparse
 import hashlib
 import json
 import os
+import stat
 import subprocess
 import sys
 import tempfile
@@ -60,12 +61,23 @@ def candidate_files(root: Path) -> list[str]:
         return sorted(files)
 
 
+def is_link(path: Path) -> bool:
+    """A symlink, or any Windows reparse point such as a directory junction."""
+    if path.is_symlink():
+        return True
+    try:
+        attributes = getattr(os.lstat(path), "st_file_attributes", 0)
+    except OSError:
+        return False
+    return bool(attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT)
+
+
 def through_symlink(root: Path, relative: str) -> bool:
-    """Whether the path or any directory below the root on the way is a symlink."""
+    """Whether the path or any directory below the root on the way is a link."""
     current = root
     for part in Path(relative).parts:
         current = current / part
-        if current.is_symlink():
+        if is_link(current):
             return True
     return False
 
@@ -158,14 +170,20 @@ def self_test() -> None:
         refs = [item["path"] for item in scan(root, legacy)["references"]]
         assert refs == ["AGENTS.md", "notes.md"], refs
 
-    # A legacy path reached through a symlinked directory is never deleted.
+    # A legacy path reached through a linked directory (a symlink, or a
+    # junction on Windows) is never deleted.
     with tempfile.TemporaryDirectory() as temp, tempfile.TemporaryDirectory() as outside:
         root = Path(temp)
         (Path(outside) / "old.md").write_bytes(content)
         try:
             (root / "docs").symlink_to(outside, target_is_directory=True)
+            linked = True
         except OSError:
-            print("find_legacy self-test: symlink case skipped (symlinks unavailable)")
+            linked = os.name == "nt" and subprocess.run(
+                ["cmd", "/c", "mklink", "/J", str(root / "docs"), outside], capture_output=True
+            ).returncode == 0
+        if not linked:
+            print("find_legacy self-test: linked-directory case skipped (no symlink or junction)")
         else:
             report = scan(root, legacy)
             assert report["delete"] == [], report
