@@ -351,7 +351,10 @@ where
                 (Some(_), None, Some(_)) => conflicts.push(UpdateConflict {
                     path,
                     reason: ConflictReason::ModifiedRemovedFile,
-                    detail: "upstream removed a file that contains consumer changes".to_owned(),
+                    detail: "upstream removed a file that contains consumer changes; keep it as \
+                             consumer content: move it outside the repository, rerun the update, \
+                             then restore it"
+                        .to_owned(),
                 }),
                 (Some(_), None, None) => changes.push(PlannedFileChange {
                     path,

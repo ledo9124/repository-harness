@@ -44,6 +44,7 @@ current_files=(
   docs/decisions/0031-line-ending-independent-core-bytes.md
   docs/decisions/0032-installed-docs-name-only-installed-paths.md
   docs/decisions/0033-each-kind-of-truth-has-one-owner.md
+  docs/decisions/0034-agent-run-legacy-migration.md
   docs/research/application-legibility.md
   .github/ISSUE_TEMPLATE/real-world-example.md
 )
@@ -175,6 +176,7 @@ executables=(
   tests/workflow/test-repository-workflow.sh
   tests/workflow/test-task-authority.sh
   tests/installer/test-install-harness-modes.sh
+  tests/installer/test-legacy-table.sh
 )
 for executable in "${executables[@]}"; do
   [[ -x "$root/$executable" ]] || fail "documented gate is not executable: $executable"
@@ -190,6 +192,8 @@ required_gates=(
   'tests/workflow/test-task-authority.sh'
   'tests/release/test-harness-release-workflow-contract.sh'
   'validate_evidence_capsule.py --self-test'
+  'find_legacy.py --self-test'
+  'tests/installer/test-legacy-table.sh'
 )
 for gate in "${required_gates[@]}"; do
   require scripts/validate-premerge.sh "$gate"

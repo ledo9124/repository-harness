@@ -62,9 +62,11 @@ The default core contains:
 - the repository workflow and documentation map;
 - product, decision, and execution-plan structure;
 - optional templates for durable plans, decisions, application runbooks, and
-  evidence-backed Harness improvements; and
+  evidence-backed Harness improvements;
 - an invariant-encoding pattern and skill, plus explicit-only onboarding and
-  proposal-audit skills.
+  proposal-audit skills; and
+- a migration skill that, when asked, updates from an earlier release and
+  removes the unchanged files it left behind.
 
 It does not install application architecture, product policy, validation
 commands, credentials, a database, schemas, orchestration, or background
@@ -118,6 +120,19 @@ scripts/bin/harness update --continue
 ```
 
 Use `scripts/bin/harness update --abort` to discard only the staged resolution.
+
+### Migrate From An Earlier Release
+
+From harness-v0.1.11 or later, ask your agent to migrate Harness and remove the
+legacy the earlier release left behind. After the update, the agent follows the
+installed `migrate-harness` skill: it deletes only files whose bytes equal a
+release's copy and reports everything else (decision 0034).
+
+A Windows install of harness-v0.1.11 to v0.1.13 that Git has checked out again
+(for example a fresh clone with `core.autocrlf`) fails every command with
+`base hash mismatch for AGENTS.md`, because those releases recorded mixed line
+endings. Rerun the install command above with `--merge` (`-Merge`) once; it
+runs the current binary, which verifies such files, then migrate as above.
 
 ## Optional Skills
 

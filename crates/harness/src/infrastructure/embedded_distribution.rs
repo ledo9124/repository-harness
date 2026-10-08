@@ -126,6 +126,19 @@ mod tests {
             .unwrap();
         assert!(String::from_utf8_lossy(&invariant_metadata.content)
             .contains("allow_implicit_invocation: true"));
+        let migrate_metadata = distribution
+            .files
+            .iter()
+            .find(|file| file.path.as_str() == ".agents/skills/migrate-harness/agents/openai.yaml")
+            .unwrap();
+        assert!(String::from_utf8_lossy(&migrate_metadata.content)
+            .contains("allow_implicit_invocation: true"));
+        let migrate = distribution
+            .files
+            .iter()
+            .find(|file| file.path.as_str() == ".agents/skills/migrate-harness/SKILL.md")
+            .unwrap();
+        assert!(String::from_utf8_lossy(&migrate.content).contains("Never delete"));
     }
 
     #[test]

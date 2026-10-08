@@ -73,6 +73,7 @@ required_payloads=(
   .agents/skills/audit-onboarding-proposal/SKILL.md
   .agents/skills/encode-invariant/SKILL.md
   .agents/skills/improve-harness/SKILL.md
+  .agents/skills/migrate-harness/SKILL.md
   .agents/skills/onboard-repository/SKILL.md
   docs/WORKFLOW.md
   docs/patterns/encoding-invariants.md
@@ -91,6 +92,10 @@ for metadata in "${skill_metadata[@]}"; do
 done
 grep -Fq 'allow_implicit_invocation: true' \
   "$root/.agents/skills/encode-invariant/agents/openai.yaml"
+grep -Fq 'allow_implicit_invocation: true' \
+  "$root/.agents/skills/migrate-harness/agents/openai.yaml"
+# Legacy removal deletes only unchanged Harness-generated files (decision 0034).
+grep -Fq 'Never delete' "$root/.agents/skills/migrate-harness/SKILL.md"
 
 invariant_skill="$root/.agents/skills/encode-invariant/SKILL.md"
 for trigger in \

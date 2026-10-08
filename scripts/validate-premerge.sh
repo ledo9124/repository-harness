@@ -20,6 +20,8 @@ cargo test --workspace --locked
 cargo clippy --workspace --all-targets --locked -- -D warnings
 
 python3 .agents/skills/audit-onboarding-proposal/scripts/validate_evidence_capsule.py --self-test
+python3 .agents/skills/migrate-harness/scripts/find_legacy.py --self-test
+tests/installer/test-legacy-table.sh
 
 tests/installer/assert-agent-authority-contract.sh
 tests/installer/assert-install-manifest-links.sh
