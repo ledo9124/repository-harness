@@ -17,6 +17,9 @@ task narratives.
 - `docs-truth.md`: docs hold what code cannot; consumer-only installed maps,
   decision 0032 and its path check, one install list, and the measured effect
   of the change on existing consumers.
+- `legacy-migration.md`: the `migrate-harness` skill and decision 0034, the
+  self-ignoring backup folder, the mixed-line-ending base fix, and the
+  fresh-agent migration proof from v0.1.11, v0.1.13 and v0.1.16.
 
 ## Harness-Improvement Experiments
 
