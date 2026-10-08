@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-10-08 - PR #17
+
+- feat(core): migrate-harness skill, self-ignoring backups, mixed-ending base fix (decision 0034) (@ledo9124)
+- Merge commit: `7710a35985fb1405a5cd670f795a31c8afa4f16f`
+- Harness core candidate: `harness-v0.1.19` (publication requires platform proof)
+- Changed files: 22 total (first 20 shown)
+  - `.agents/skills/migrate-harness/SKILL.md`
+  - `.agents/skills/migrate-harness/agents/openai.yaml`
+  - `.agents/skills/migrate-harness/scripts/find_legacy.py`
+  - `README.md`
+  - `crates/harness/assets/docs/README.md`
+  - `crates/harness/src/application/service.rs`
+  - `crates/harness/src/infrastructure/embedded_distribution.rs`
+  - `crates/harness/src/infrastructure/filesystem_state.rs`
+  - `docs/decisions/0034-agent-run-legacy-migration.md`
+  - `docs/decisions/README.md`
+  - `docs/plans/completed/README.md`
+  - `docs/plans/completed/legacy-migration.md`
+  - `docs/product/installation-profiles.md`
+  - `scripts/harness-install-files.txt`
+  - `scripts/install-harness.ps1`
+  - `scripts/install-harness.sh`
+  - `scripts/validate-premerge.sh`
+  - `tests/docs/test-doc-contracts.sh`
+  - `tests/installer/assert-agent-authority-contract.sh`
+  - `tests/installer/test-install-harness-modes.ps1`
+  - _… 2 additional file(s) omitted from this entry._
+
 ## 2026-10-08 - PR #16
 
 - docs(decisions): 0033 each kind of truth has one owner (@ledo9124)
