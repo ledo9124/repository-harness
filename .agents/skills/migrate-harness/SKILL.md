@@ -32,8 +32,10 @@ user whether to continue or abort it before going on.
 
 ## 2. Update The Core
 
-Run `scripts/bin/harness update` (`scripts\bin\harness.exe` on Windows). For a
-conflict:
+Run `scripts/bin/harness update` (`scripts\bin\harness.exe` on Windows). If an
+older executable fails with `base hash mismatch`, rerun the Harness install
+command with `--merge` (`-Merge` in PowerShell) once instead of editing
+`.harness-core/`; it runs the current binary. For a conflict:
 
 - `overlapping_changes`: follow the printed resolution steps. Explain concrete
   differences and get the user's direction for any material choice before
